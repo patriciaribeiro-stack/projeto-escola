@@ -1,0 +1,1 @@
+export const papelLabel = { pai: 'Pai/mãe', professor: 'Professor(a)', coordenacao: 'Coordenação', secretaria: 'Secretaria', recepcao: 'Recepção', integral: 'Monitor do Integral', substituto: 'Professor(a) eventual', aluno: 'Aluno(a)' } as const

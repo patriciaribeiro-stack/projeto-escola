@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #faf6ec;
+  --color-paper-raised: #ffffff;
+  --color-paper-sunken: #f1ece0;
+  --color-ink: #1e2a26;
+  --color-muted: #5b6b64;
+  --color-faint: #8b978f;
+  --color-line: #e4e1d4;
+
+  --color-navy: #1b3358;
+  --color-navy-dark: #12233e;
+
+  --color-blue: #2e7fb8;
+  --color-blue-dark: #235f8a;
+  --color-blue-light: #e1eef6;
+
+  --color-green: #1b7a68;
+  --color-green-dark: #166253;
+  --color-green-light: #dff0ec;
+
+  --color-amber: #8c6724;
+  --color-mostarda: #e3a73b;
+  --color-amber-light: #fbedd1;
+
+  --color-red: #e2483f;
+  --color-red-light: #fbe1de;
+
+  --font-display: "Plus Jakarta Sans", ui-rounded, "SF Pro Rounded", "Segoe UI Rounded", "Avenir Next", system-ui, sans-serif;
+  --font-body: "Inter", -apple-system, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background: var(--color-mostarda);
+  color: var(--color-navy-dark);
+}

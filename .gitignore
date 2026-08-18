@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.log
+
+# Banco de dados ao vivo — tem dado real de aluno (saúde, medicação, CPF).
+# Nunca commitar. Cada computador mantém a própria cópia local.
+server/data/db.json
+
+# Segredos / túneis locais
+.env
+.env.local
+ngrok-traffic-policy.yml
+
+# Config local do Claude Code (específica de cada máquina)
+.claude/settings.local.json

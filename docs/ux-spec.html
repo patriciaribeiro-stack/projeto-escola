@@ -1,0 +1,892 @@
+<title>App da Escola — Especificação de UX/UI</title>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M5.5 10V20h13V10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20c0-4.4 3.4-7 7.5-7s7.5 2.6 7.5 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="7" x2="8" y2="7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="12" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="7" x2="16" y2="7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="8" y1="11.5" x2="8" y2="11.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="12" y1="11.5" x2="12" y2="11.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="11.5" x2="16" y2="11.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><rect x="10" y="15.5" width="4" height="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5A2 2 0 0 1 6 3.5h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4.5V5.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.3 12.3l2.6 2.6 5-5.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.3" r="3.1" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 20c0-3.7 2.6-5.9 5.5-5.9s5.5 2.2 5.5 5.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="9" r="2.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15.3 14.3c2.6-.5 5 1.2 5.2 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="4" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="13" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M5 19.5h4L18.5 10 15 6.5 5.5 16v3.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><line x1="13.2" y1="8.3" x2="16.7" y2="11.8" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.3 9.5a5.7 5.7 0 0 1 11.4 0v4.3l1.8 2.7H4.5l1.8-2.7V9.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><rect x="5" y="12" width="3.4" height="7.5" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="10.3" y="7.5" width="3.4" height="12" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="15.6" y="4" width="3.4" height="15.5" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5a1.5 1.5 0 0 1 1.5-1.5h1.6l1-1.6h7.8l1 1.6h1.6A1.5 1.5 0 0 1 20 8.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18V8.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.3" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5c2-1 5-1 8 .3V19c-3-1.3-6-1.3-8-.3V5.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M20 5.5c-2-1-5-1-8 .3V19c3-1.3 6-1.3 8-.3V5.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-6.1-6.5-11A6.5 6.5 0 0 1 18.5 10c0 4.9-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.1" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  </defs>
+</svg>
+
+<style>
+  :root{
+    --paper:#FAF9F3; --paper-raised:#FFFFFF; --paper-sunken:#F1EFE6;
+    --ink:#1E2A26; --muted:#5B6B64; --faint:#8B978F;
+    --line:rgba(30,42,38,.13); --line-strong:rgba(30,42,38,.24);
+    --blue-700:#1D5C78; --blue-600:#2A7096; --blue-100:#DEEAEF;
+    --green-700:#2E7D55; --green-600:#3B9468; --green-100:#E1F0E5;
+    --amber-600:#A9701D; --amber-100:#F5E7CE;
+    --red-600:#AE3B34; --red-100:#F5DEDC;
+    --accent:var(--blue-700);
+    --shadow:0 1px 2px rgba(20,30,27,.06), 0 10px 26px -14px rgba(20,30,27,.22);
+    --font-display: ui-rounded, "SF Pro Rounded", "Segoe UI Rounded", "Avenir Next", system-ui, sans-serif;
+    --font-body: -apple-system, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#101613; --paper-raised:#171F1C; --paper-sunken:#0C1210;
+      --ink:#ECEFEA; --muted:#96A69D; --faint:#657168;
+      --line:rgba(236,239,234,.14); --line-strong:rgba(236,239,234,.26);
+      --blue-700:#79BEDD; --blue-600:#5FA8C7; --blue-100:#1C333D;
+      --green-700:#7ACBA0; --green-600:#4FAE80; --green-100:#193226;
+      --amber-600:#E3AC5E; --amber-100:#3A2C15;
+      --red-600:#E6928C; --red-100:#3A1E1C;
+      --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 32px -16px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#101613; --paper-raised:#171F1C; --paper-sunken:#0C1210;
+    --ink:#ECEFEA; --muted:#96A69D; --faint:#657168;
+    --line:rgba(236,239,234,.14); --line-strong:rgba(236,239,234,.26);
+    --blue-700:#79BEDD; --blue-600:#5FA8C7; --blue-100:#1C333D;
+    --green-700:#7ACBA0; --green-600:#4FAE80; --green-100:#193226;
+    --amber-600:#E3AC5E; --amber-100:#3A2C15;
+    --red-600:#E6928C; --red-100:#3A1E1C;
+  }
+  :root[data-theme="light"]{
+    --paper:#FAF9F3; --paper-raised:#FFFFFF; --paper-sunken:#F1EFE6;
+    --ink:#1E2A26; --muted:#5B6B64; --faint:#8B978F;
+    --line:rgba(30,42,38,.13); --line-strong:rgba(30,42,38,.24);
+    --blue-700:#1D5C78; --blue-600:#2A7096; --blue-100:#DEEAEF;
+    --green-700:#2E7D55; --green-600:#3B9468; --green-100:#E1F0E5;
+    --amber-600:#A9701D; --amber-100:#F5E7CE;
+    --red-600:#AE3B34; --red-100:#F5DEDC;
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--font-body); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--blue-100); }
+  a{ color:var(--blue-700); }
+  a:focus-visible, button:focus-visible, .tab:focus-visible{ outline:2px solid var(--blue-600); outline-offset:2px; border-radius:4px; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; scroll-behavior:auto !important; } }
+
+  h1,h2,h3,h4{ font-family:var(--font-display); font-weight:700; letter-spacing:-.01em; text-wrap:balance; color:var(--ink); margin:0; }
+  h2{ font-size:1.7rem; }
+  h3{ font-size:1.18rem; }
+  p{ margin:0; }
+  .prose{ max-width:66ch; }
+  .prose p + p, .prose ul + p, .prose p + ul{ margin-top:.85em; }
+  .prose ul{ margin:.85em 0 0; padding-left:1.2em; }
+  .prose li + li{ margin-top:.4em; }
+  .lede{ color:var(--muted); font-size:1.05rem; }
+  .eyebrow{ font-family:var(--font-display); font-size:.72rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); }
+
+  .app{ display:grid; grid-template-columns:236px 1fr; max-width:1280px; margin:0 auto; align-items:start; }
+  .toc{ position:sticky; top:0; height:100vh; overflow-y:auto; padding:30px 18px 40px 28px; }
+  .toc-brand{ font-family:var(--font-display); font-weight:700; font-size:1rem; margin-bottom:4px; }
+  .toc-brand small{ display:block; font-family:var(--font-body); font-weight:400; color:var(--muted); font-size:.78rem; margin-top:2px; }
+  .toc nav{ margin-top:22px; display:flex; flex-direction:column; gap:1px; }
+  .toc a{ text-decoration:none; color:var(--muted); font-size:.87rem; padding:7px 10px; border-radius:8px; }
+  .toc a:hover{ background:var(--paper-sunken); color:var(--ink); }
+  .toc .grp{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); margin:16px 10px 4px; font-weight:700; }
+
+  .content{ padding:38px 40px 100px; min-width:0; }
+  .hero{ max-width:66ch; padding-bottom:30px; border-bottom:1px solid var(--line); margin-bottom:44px; }
+  .hero h1{ font-size:2.3rem; margin-bottom:14px; }
+  .status-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:20px; }
+
+  section{ padding:46px 0; border-bottom:1px solid var(--line); scroll-margin-top:20px; }
+  section:last-child{ border-bottom:none; }
+  section > .eyebrow{ display:block; margin-bottom:8px; }
+  section > h2{ margin-bottom:14px; }
+  section > .lede{ max-width:62ch; margin-bottom:28px; display:block; }
+
+  .pill{ display:inline-flex; align-items:center; gap:5px; font-size:.72rem; font-weight:700; letter-spacing:.01em; padding:3px 10px; border-radius:100px; white-space:nowrap; }
+  .pill--amber{ background:var(--amber-100); color:var(--amber-600); }
+  .pill--green{ background:var(--green-100); color:var(--green-700); }
+  .pill--red{ background:var(--red-100); color:var(--red-600); }
+  .pill--blue{ background:var(--blue-100); color:var(--blue-700); }
+  .pill--muted{ background:var(--paper-sunken); color:var(--muted); }
+  .pill--dot::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  .principles{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .p-card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; box-shadow:var(--shadow); }
+  .p-card .num{ font-family:var(--font-display); font-size:.72rem; font-weight:700; color:var(--accent); letter-spacing:.06em; }
+  .p-card h3{ margin:8px 0 6px; font-size:1.02rem; }
+  .p-card p{ color:var(--muted); font-size:.92rem; }
+
+  .swatches{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:30px; }
+  .swatch{ width:132px; }
+  .swatch .chip-color{ height:70px; border-radius:12px; border:1px solid var(--line); }
+  .swatch .lbl{ font-size:.78rem; font-weight:700; margin-top:8px; }
+  .swatch .hex{ font-size:.74rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+  .type-scale{ display:flex; flex-direction:column; gap:16px; margin-top:6px; }
+  .type-row{ display:flex; align-items:baseline; gap:18px; border-bottom:1px dashed var(--line); padding-bottom:14px; }
+  .type-row .tag{ width:150px; flex-shrink:0; font-size:.74rem; color:var(--muted); font-family:var(--font-body); }
+  .type-row .sample.h{ font-family:var(--font-display); font-weight:700; }
+  .type-row .sample.b{ font-family:var(--font-body); }
+
+  table.spec{ width:100%; border-collapse:collapse; font-size:.9rem; }
+  table.spec th{ text-align:left; font-family:var(--font-display); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); padding:8px 14px 8px 0; border-bottom:1px solid var(--line-strong); }
+  table.spec td{ padding:11px 14px 11px 0; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.spec tr:last-child td{ border-bottom:none; }
+  .table-wrap{ overflow-x:auto; }
+
+  .callout{ background:var(--paper-sunken); border-radius:var(--radius); padding:18px 20px; border:1px solid var(--line); font-size:.92rem; }
+  .callout strong{ color:var(--ink); }
+  .callout.warn{ background:var(--amber-100); border-color:transparent; }
+  .callout.warn strong{ color:var(--amber-600); }
+
+  pre.mermaid{ background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius); padding:18px; overflow-x:auto; }
+
+  .tabbar-spec{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .tb-item{ display:flex; align-items:center; gap:8px; background:var(--paper-raised); border:1px solid var(--line); border-radius:100px; padding:7px 14px 7px 10px; font-size:.85rem; }
+  .tb-item svg{ width:17px; height:17px; color:var(--accent); }
+
+  /* phone mockups */
+  .gallery{ display:flex; gap:26px; overflow-x:auto; padding:10px 4px 22px; scroll-snap-type:x proximity; }
+  figure.mock{ flex:0 0 auto; scroll-snap-align:start; width:250px; }
+  figure.mock figcaption{ margin-top:12px; font-size:.82rem; color:var(--muted); max-width:250px; }
+  figure.mock figcaption b{ display:block; color:var(--ink); font-size:.86rem; margin-bottom:2px; }
+
+  .phone{ width:250px; height:520px; background:var(--ink); border-radius:34px; padding:8px; box-shadow:var(--shadow); }
+  .phone__inner{ background:var(--paper); width:100%; height:100%; border-radius:26px; overflow:hidden; display:flex; flex-direction:column; position:relative; }
+  .phone__bar{ display:flex; justify-content:space-between; align-items:center; padding:9px 16px 4px; font-size:.68rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .phone__notch{ position:absolute; top:8px; left:50%; transform:translateX(-50%); width:64px; height:16px; background:var(--ink); border-radius:100px; }
+  .phone__screen{ flex:1; overflow-y:auto; padding:10px 12px 6px; display:flex; flex-direction:column; gap:10px; }
+  .phone__title{ font-family:var(--font-display); font-weight:700; font-size:1.02rem; padding:2px 2px 0; }
+  .phone__sub{ font-size:.72rem; color:var(--muted); padding:0 2px; margin-top:-6px; }
+
+  .m-card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:14px; padding:11px 12px; }
+  .m-card + .m-card{ margin-top:0; }
+  .m-row{ display:flex; align-items:center; gap:9px; }
+  .m-row + .m-row{ margin-top:9px; }
+  .m-avatar{ width:30px; height:30px; border-radius:50%; background:var(--blue-100); color:var(--blue-700); display:flex; align-items:center; justify-content:center; font-size:.68rem; font-weight:700; flex-shrink:0; }
+  .m-text{ flex:1; min-width:0; }
+  .m-text .t1{ font-size:.78rem; font-weight:700; }
+  .m-text .t2{ font-size:.7rem; color:var(--muted); }
+  .m-chev{ width:15px; height:15px; color:var(--faint); flex-shrink:0; }
+
+  .m-list-item{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .m-list-item:last-child{ border-bottom:none; }
+
+  .photo-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+  .photo-grid div{ aspect-ratio:1; border-radius:8px; }
+  .ph1{ background:linear-gradient(135deg,var(--green-100),var(--blue-100)); }
+  .ph2{ background:linear-gradient(135deg,var(--amber-100),var(--green-100)); }
+  .ph3{ background:linear-gradient(135deg,var(--blue-100),var(--paper-sunken)); }
+
+  .chip-select{ display:inline-flex; align-items:center; gap:6px; font-size:.74rem; font-weight:600; padding:6px 11px; border-radius:100px; border:1.5px solid var(--line-strong); color:var(--muted); }
+  .chip-select.is-on{ background:var(--green-700); border-color:var(--green-700); color:#fff; }
+  .chip-wrap{ display:flex; gap:6px; flex-wrap:wrap; }
+  .day-tag{ font-size:.62rem; text-transform:uppercase; letter-spacing:.04em; color:var(--faint); font-weight:700; }
+
+  .banner-alert{ background:var(--red-100); color:var(--red-600); border-radius:12px; padding:10px 12px; font-size:.75rem; font-weight:600; display:flex; gap:8px; align-items:flex-start; }
+  .banner-alert svg{ width:16px; height:16px; flex-shrink:0; margin-top:1px; }
+
+  .timeline{ display:flex; flex-direction:column; }
+  .t-step{ display:flex; gap:10px; position:relative; padding-bottom:16px; }
+  .t-step:last-child{ padding-bottom:0; }
+  .t-step::before{ content:""; position:absolute; left:5px; top:14px; bottom:0; width:1.5px; background:var(--line-strong); }
+  .t-step:last-child::before{ display:none; }
+  .t-dot{ width:11px; height:11px; border-radius:50%; background:var(--paper-sunken); border:2px solid var(--faint); flex-shrink:0; margin-top:2px; }
+  .t-dot.done{ background:var(--green-700); border-color:var(--green-700); }
+  .t-dot.live{ background:var(--red-600); border-color:var(--red-600); }
+  .t-body .tt1{ font-size:.74rem; font-weight:700; }
+  .t-body .tt2{ font-size:.68rem; color:var(--muted); }
+
+  .btn-p{ background:var(--blue-700); color:#fff; border:none; border-radius:11px; padding:10px; font-size:.8rem; font-weight:700; text-align:center; font-family:var(--font-body); }
+  .btn-s{ background:transparent; color:var(--blue-700); border:1.5px solid var(--blue-700); border-radius:11px; padding:9px; font-size:.8rem; font-weight:700; text-align:center; }
+  .btn-g{ background:var(--paper-sunken); color:var(--ink); border:none; border-radius:11px; padding:10px; font-size:.8rem; font-weight:700; text-align:center; }
+
+  .sig-box{ border:1.5px dashed var(--line-strong); border-radius:12px; height:56px; display:flex; align-items:center; justify-content:center; }
+  .sig-box svg{ width:80px; height:26px; color:var(--blue-700); }
+
+  .tabbar{ display:flex; border-top:1px solid var(--line); padding:7px 4px 10px; background:var(--paper-raised); }
+  .tab{ flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; color:var(--faint); font-size:.58rem; font-weight:600; position:relative; }
+  .tab svg{ width:19px; height:19px; }
+  .tab.active{ color:var(--blue-700); }
+  .tab.active::before{ content:""; position:absolute; top:-7px; width:16px; height:2.5px; border-radius:2px; background:var(--blue-700); }
+  .tab .bdg{ position:absolute; top:-3px; right:22%; width:14px; height:14px; border-radius:50%; background:var(--red-600); color:#fff; font-size:.5rem; display:flex; align-items:center; justify-content:center; font-weight:700; }
+
+  footer.doc{ padding:40px 0 10px; color:var(--faint); font-size:.82rem; }
+
+  @media (max-width: 900px){
+    .app{ display:block; }
+    .toc{ position:sticky; top:0; height:auto; padding:12px 14px; display:flex; align-items:center; gap:14px; overflow-x:auto; background:var(--paper); border-bottom:1px solid var(--line); z-index:20; }
+    .toc-brand{ flex-shrink:0; font-size:.86rem; }
+    .toc-brand small{ display:none; }
+    .toc nav{ flex-direction:row; margin-top:0; gap:2px; }
+    .toc a{ white-space:nowrap; }
+    .toc .grp{ display:none; }
+    .content{ padding:26px 18px 80px; }
+    .hero h1{ font-size:1.7rem; }
+    .principles{ grid-template-columns:1fr; }
+    .type-row{ flex-direction:column; gap:4px; }
+    .type-row .tag{ width:auto; }
+  }
+</style>
+
+<div class="app">
+  <aside class="toc" id="toc">
+    <div class="toc-brand">App da Escola<small>Especificação de UX/UI</small></div>
+    <nav>
+      <div class="grp">Fundação</div>
+      <a href="#principios">Princípios</a>
+      <a href="#visual">Sistema visual</a>
+      <a href="#ia">Arquitetura da informação</a>
+      <a href="#navegacao">Navegação mobile</a>
+      <div class="grp">Telas</div>
+      <a href="#telas-pais">App dos pais</a>
+      <a href="#telas-professor">App do professor</a>
+      <a href="#telas-coordenacao">Painel da coordenação</a>
+      <div class="grp">Fluxos críticos</div>
+      <a href="#fluxo-saude">Saúde</a>
+      <a href="#fluxo-cantina">Cantina</a>
+      <a href="#fluxo-licao">Lição de casa</a>
+      <a href="#fluxo-eventos">Eventos</a>
+      <div class="grp">Referência</div>
+      <a href="#estados">Estados e status</a>
+      <a href="#notificacoes">Notificações & PWA</a>
+      <a href="#privacidade">Privacidade</a>
+      <a href="#roadmap">Roadmap no Bubble</a>
+      <a href="#pendencias">Em aberto</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="hero">
+      <span class="eyebrow">Blueprint de produto</span>
+      <h1>Um app, três papéis, uma tela que já nasce mobile</h1>
+      <p class="lede">Esta é a especificação de UX/UI para o aplicativo da escola: um único app Bubble, responsivo mobile-first, com áreas separadas para pais, professores e coordenação. Cobre arquitetura de navegação, telas, fluxos críticos (saúde, cantina, lição de casa, eventos) e o vocabulário de estados que o Bubble vai precisar guardar.</p>
+      <div class="status-row">
+        <span class="pill pill--green pill--dot">Cadastro e login — pronto</span>
+        <span class="pill pill--amber pill--dot">Cantina — fluxo pronto, vira seleção</span>
+        <span class="pill pill--muted pill--dot">Restante — a construir</span>
+      </div>
+    </div>
+
+    <!-- PRINCÍPIOS -->
+    <section id="principios">
+      <span class="eyebrow">01</span>
+      <h2>Princípios de projeto</h2>
+      <span class="lede">Seis decisões que se repetem em várias telas — melhor deixá-las explícitas uma vez do que redescobrir a cada tela nova.</span>
+      <div class="principles">
+        <div class="p-card">
+          <div class="num">Sem texto livre onde há risco</div>
+          <h3>Seleção, não digitação</h3>
+          <p>Cantina e autorização de medicação nunca aceitam texto livre — só opções pré-cadastradas. Texto livre vira ambiguidade; ambiguidade em remédio ou pedido pago é o tipo de erro que a escola não pode ter.</p>
+        </div>
+        <div class="p-card">
+          <div class="num">Estado sempre visível</div>
+          <h3>Nada fica implícito</h3>
+          <p>Lição de casa, cantina, saúde e eventos sempre mostram um <em>pill</em> de status em qualquer lista. O pai nunca precisa abrir um item para saber se está pendente, resolvido ou atrasado.</p>
+        </div>
+        <div class="p-card">
+          <div class="num">Escopo da família</div>
+          <h3>O que é do filho é só da família</h3>
+          <p>Rotina individual, saúde e mensagens privadas vivem em uma área estruturalmente separada do feed geral da turma — mesmo visualmente, para que o pai nunca confunda "da turma" com "do meu filho".</p>
+        </div>
+        <div class="p-card">
+          <div class="num">Urgência tem relógio</div>
+          <h3>Nada urgente fica solto</h3>
+          <p>Ocorrência de saúde nunca é "só uma notificação": tem timer visível, lembrete e escalonamento automático para a coordenação se o pai não responder a tempo.</p>
+        </div>
+        <div class="p-card">
+          <div class="num">Assinatura pesa</div>
+          <h3>Autorizar um passeio é um momento, não um checkbox</h3>
+          <p>Termos de autorização (ex: passeio) abrem uma tela dedicada de leitura + assinatura — nunca um checkbox perdido no meio de outras opções de um formulário.</p>
+        </div>
+        <div class="p-card">
+          <div class="num">Editar deixa rastro</div>
+          <h3>Coordenação edita, nunca apaga em silêncio</h3>
+          <p>Toda edição da coordenação sobre conteúdo postado por professor grava quem mudou, quando e o quê — visível para o professor original.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SISTEMA VISUAL -->
+    <section id="visual">
+      <span class="eyebrow">02</span>
+      <h2>Sistema visual</h2>
+      <span class="lede">Verde, azul e branco — a paleta da escola — organizados em papéis funcionais para não virar decoração aleatória: azul fala pela comunicação institucional, verde fala por rotina/saúde/confirmação.</span>
+
+      <h3 style="margin-bottom:14px;">Paleta</h3>
+      <div class="swatches">
+        <div class="swatch"><div class="chip-color" style="background:#1D5C78"></div><div class="lbl">Azul institucional</div><div class="hex">#1D5C78 · comunicação, links, ação primária</div></div>
+        <div class="swatch"><div class="chip-color" style="background:#2E7D55"></div><div class="lbl">Verde rotina</div><div class="hex">#2E7D55 · confirmações, saúde resolvida</div></div>
+        <div class="swatch"><div class="chip-color" style="background:#FAF9F3;border:1px solid #e2ded0"></div><div class="lbl">Branco papel</div><div class="hex">#FAF9F3 · fundo (não branco puro)</div></div>
+        <div class="swatch"><div class="chip-color" style="background:#A9701D"></div><div class="lbl">Âmbar</div><div class="hex">#A9701D · pendente, aguardando</div></div>
+        <div class="swatch"><div class="chip-color" style="background:#AE3B34"></div><div class="lbl">Vermelho</div><div class="hex">#AE3B34 · urgente, saúde ativa, faltou</div></div>
+        <div class="swatch"><div class="chip-color" style="background:#1E2A26"></div><div class="lbl">Tinta</div><div class="hex">#1E2A26 · texto (não preto puro)</div></div>
+      </div>
+      <p class="prose" style="color:var(--muted); font-size:.88rem; margin-bottom:34px;">Âmbar e vermelho são cores <em>semânticas</em> de estado — não competem com azul/verde como identidade, só sinalizam "precisa de atenção" e "urgente" em qualquer tela do app.</p>
+
+      <h3 style="margin-bottom:14px;">Tipografia</h3>
+      <div class="type-scale">
+        <div class="type-row"><span class="tag">Título de tela<br>Rounded, 700</span><span class="sample h" style="font-size:1.6rem;">Rotina de hoje</span></div>
+        <div class="type-row"><span class="tag">Título de cartão<br>Rounded, 700</span><span class="sample h" style="font-size:1.05rem;">Lição de casa — Matemática</span></div>
+        <div class="type-row"><span class="tag">Corpo<br>Sistema, 400</span><span class="sample b" style="font-size:.95rem;">Entrega até sexta-feira, 26/07. Enviada pela professora Ana às 08:40.</span></div>
+        <div class="type-row"><span class="tag">Legenda / metadado<br>Sistema, 500</span><span class="sample b" style="font-size:.78rem; color:var(--muted);">Turma Jardim II · há 3 horas</span></div>
+        <div class="type-row"><span class="tag">Status (pill)<br>Sistema, 700, caps</span><span class="pill pill--amber">PENDENTE</span></div>
+      </div>
+      <p class="prose" style="color:var(--muted); font-size:.88rem; margin-top:18px;">Um par funcional: fonte arredondada só nos títulos (tom acolhedor, apropriado para educação infantil/fundamental) e fonte neutra do sistema no corpo e nas telas do app (leitura rápida, sem ruído, carregamento instantâneo — sem depender de fonte externa).</p>
+    </section>
+
+    <!-- IA -->
+    <section id="ia">
+      <span class="eyebrow">03</span>
+      <h2>Arquitetura da informação</h2>
+      <span class="lede">Um único login redireciona para uma das três áreas conforme o tipo de usuário já cadastrado. Cada área tem sua própria barra de navegação inferior — no máximo 5 itens, o resto vive dentro de cada aba.</span>
+
+      <h3 style="margin-bottom:10px;">App dos pais</h3>
+      <pre class="mermaid">
+graph TD
+  L[Login] --> H[Início — feed geral + avisos]
+  L --> F[Meu filho]
+  L --> E[Escola]
+  L --> M[Mensagens privadas]
+  L --> P[Perfil]
+  F --> F1[Rotina do dia<br/>alimentação · sono · higiene · aulas]
+  F --> F2[Lição de casa]
+  F --> F3[Saúde<br/>histórico + ocorrência ativa]
+  E --> E1[Eventos e enquetes]
+  E --> E2[Achados e perdidos]
+  E --> E3[Almoço — cardápio do dia]
+  E --> E4[Cantina — pedido do dia]
+  P --> P1[Filhos vinculados]
+  P --> P2[Autorizações médicas cadastradas]
+  P --> P3[Notificações]
+      </pre>
+      <p class="prose" style="color:var(--muted); font-size:.88rem; margin:10px 0 30px;">Saúde não vira uma 6ª aba: um <strong>banner vermelho fixo</strong> no topo do app (em qualquer aba) avisa quando há ocorrência ativa aguardando resposta — mais visível do que enterrar em uma aba que o pai pode não abrir a tempo.</p>
+
+      <h3 style="margin-bottom:10px;">App do professor</h3>
+      <pre class="mermaid">
+graph TD
+  L[Login] --> H[Hoje — resumo da turma]
+  L --> PR[Presença]
+  L --> PO[Postar]
+  L --> T[Turma]
+  PO --> PO1[Lição de casa para a turma]
+  PO --> PO2[Fotos da rotina]
+  PO --> PO3[Relatório — turma ou individual]
+  T --> T1[Perfil do aluno]
+  T1 --> T2[Relatório individual]
+  T1 --> T3[Histórico de presença]
+      </pre>
+
+      <h3 style="margin-bottom:10px; margin-top:30px;">Painel da coordenação</h3>
+      <pre class="mermaid">
+graph TD
+  L[Login] --> D[Painel — acessos de pais e professores]
+  L --> C[Conteúdo]
+  L --> O[Ocorrências]
+  L --> EN[Enquetes]
+  C --> C1[Lições de casa postadas]
+  C --> C2[Relatórios enviados]
+  C --> C3[Presença lançada pelos professores]
+  C --> C4[Editar qualquer item — com histórico]
+  O --> O1[Saúde ativa / escalonada]
+  O --> O2[Achados e perdidos — moderação]
+      </pre>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <section id="navegacao">
+      <span class="eyebrow">04</span>
+      <h2>Navegação mobile</h2>
+      <span class="lede">Barra inferior fixa em todas as três áreas — o padrão que qualquer pai já reconhece de outros apps do celular. Ícone + rótulo sempre visíveis (nunca só ícone), aba ativa com traço superior azul, contador vermelho para pendências.</span>
+
+      <h3 style="margin-bottom:6px;">Pais</h3>
+      <div class="tabbar-spec">
+        <span class="tb-item"><svg><use href="#i-home"/></svg>Início</span>
+        <span class="tb-item"><svg><use href="#i-person"/></svg>Meu filho</span>
+        <span class="tb-item"><svg><use href="#i-building"/></svg>Escola</span>
+        <span class="tb-item"><svg><use href="#i-chat"/></svg>Mensagens</span>
+        <span class="tb-item"><svg><use href="#i-person"/></svg>Perfil</span>
+      </div>
+      <h3 style="margin:22px 0 6px;">Professor</h3>
+      <div class="tabbar-spec">
+        <span class="tb-item"><svg><use href="#i-home"/></svg>Hoje</span>
+        <span class="tb-item"><svg><use href="#i-check"/></svg>Presença</span>
+        <span class="tb-item"><svg><use href="#i-plus"/></svg>Postar</span>
+        <span class="tb-item"><svg><use href="#i-users"/></svg>Turma</span>
+      </div>
+      <h3 style="margin:22px 0 6px;">Coordenação</h3>
+      <div class="tabbar-spec">
+        <span class="tb-item"><svg><use href="#i-grid"/></svg>Painel</span>
+        <span class="tb-item"><svg><use href="#i-edit"/></svg>Conteúdo</span>
+        <span class="tb-item"><svg><use href="#i-bell"/></svg>Ocorrências</span>
+        <span class="tb-item"><svg><use href="#i-chart"/></svg>Enquetes</span>
+      </div>
+    </section>
+
+    <!-- TELAS PAIS -->
+    <section id="telas-pais">
+      <span class="eyebrow">05 · Telas</span>
+      <h2>App dos pais</h2>
+      <span class="lede">Cinco telas que concentram as decisões de design mais específicas do app.</span>
+
+      <div class="gallery">
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Início</div>
+              <div class="banner-alert"><svg><use href="#i-bell"/></svg>Ocorrência com Lucas — dor de cabeça às 14:12. Toque para responder.</div>
+              <div class="m-card">
+                <div class="m-row"><div class="m-avatar">JI</div><div class="m-text"><div class="t1">Jardim II · Aviso geral</div><div class="t2">Passeio ao parque confirmado para sexta</div></div></div>
+              </div>
+              <div class="m-card">
+                <div class="t1" style="margin-bottom:8px;">Fotos da turma hoje</div>
+                <div class="photo-grid"><div class="ph1"></div><div class="ph2"></div><div class="ph3"></div></div>
+              </div>
+              <div class="m-card">
+                <div class="m-row"><div class="m-avatar">P</div><div class="m-text"><div class="t1">Prof. Ana</div><div class="t2">Mensagem sobre Lucas · há 20 min</div></div><svg class="m-chev"><use href="#i-chevron"/></svg></div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab active"><svg><use href="#i-home"/></svg>Início</div>
+              <div class="tab" style="position:relative"><svg><use href="#i-person"/></svg>Meu filho<span class="bdg">2</span></div>
+              <div class="tab"><svg><use href="#i-building"/></svg>Escola</div>
+              <div class="tab"><svg><use href="#i-chat"/></svg>Mensagens</div>
+              <div class="tab"><svg><use href="#i-person"/></svg>Perfil</div>
+            </div>
+          </div></div>
+          <figcaption><b>Início</b>Feed da turma + banner de saúde fixo no topo quando há algo ativo. Badge vermelho na aba "Meu filho" mostra pendências (ex: 1 lição + 1 ocorrência).</figcaption>
+        </figure>
+
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Lição de casa</div>
+              <div class="phone__sub">Lucas · Jardim II</div>
+              <div class="m-card" style="padding:0;">
+                <div class="m-list-item" style="padding:11px 12px;"><div class="m-text"><div class="t1">Matemática — contar até 20</div><div class="t2">Entrega 26/07</div></div><span class="pill pill--amber">Pendente</span></div>
+                <div class="m-list-item" style="padding:11px 12px;"><div class="m-text"><div class="t1">Português — desenho da família</div><div class="t2">Entregue 22/07</div></div><span class="pill pill--green">Certo</span></div>
+                <div class="m-list-item" style="padding:11px 12px;"><div class="m-text"><div class="t1">Artes — colagem</div><div class="t2">Entregue 19/07</div></div><span class="pill pill--blue">Fora do padrão</span></div>
+                <div class="m-list-item" style="padding:11px 12px;"><div class="m-text"><div class="t1">Ciências — folha da árvore</div><div class="t2">15/07</div></div><span class="pill pill--red">Faltou</span></div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-home"/></svg>Início</div>
+              <div class="tab active"><svg><use href="#i-person"/></svg>Meu filho</div>
+              <div class="tab"><svg><use href="#i-building"/></svg>Escola</div>
+              <div class="tab"><svg><use href="#i-chat"/></svg>Mensagens</div>
+              <div class="tab"><svg><use href="#i-person"/></svg>Perfil</div>
+            </div>
+          </div></div>
+          <figcaption><b>Meu filho → Lição de casa</b>Lista com status sempre visível — o pai nunca precisa abrir para saber a situação. Toque no item mostra o que foi postado, o que fazer e a data.</figcaption>
+        </figure>
+
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Ocorrência — Lucas</div>
+              <div class="pill pill--red pill--dot" style="align-self:flex-start;">Aguardando sua resposta</div>
+              <div class="m-card">
+                <div class="t1" style="margin-bottom:4px;">Dor de cabeça</div>
+                <div class="t2">Registrado por Prof. Ana às 14:12 · leve</div>
+              </div>
+              <div class="m-card">
+                <div class="t1" style="margin-bottom:8px;">Medicações já autorizadas por você</div>
+                <div class="m-row"><div class="chip-select is-on">Dipirona gotas — conforme bula</div></div>
+              </div>
+              <div class="btn-p">Autorizar dipirona agora</div>
+              <div class="btn-s">Estou ciente, sem medicação</div>
+              <div class="phone__sub" style="margin-top:2px;">Sem resposta em 15 min, a coordenação é avisada automaticamente.</div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-home"/></svg>Início</div>
+              <div class="tab active"><svg><use href="#i-person"/></svg>Meu filho</div>
+              <div class="tab"><svg><use href="#i-building"/></svg>Escola</div>
+              <div class="tab"><svg><use href="#i-chat"/></svg>Mensagens</div>
+              <div class="tab"><svg><use href="#i-person"/></svg>Perfil</div>
+            </div>
+          </div></div>
+          <figcaption><b>Saúde — tela de resposta</b>Só mostra medicações que o pai já autorizou por escrito antes — nunca uma lista genérica de remédios. O app não sugere nada.</figcaption>
+        </figure>
+
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Cantina</div>
+              <div class="phone__sub">Hoje, sexta-feira 25/07</div>
+              <div class="m-card">
+                <div class="day-tag">Doce · todos os dias</div>
+                <div class="chip-wrap" style="margin-top:6px;"><span class="chip-select is-on">Gelatina</span><span class="chip-select">Bolo de cenoura</span></div>
+              </div>
+              <div class="m-card">
+                <div class="day-tag">Salgado · só sexta</div>
+                <div class="chip-wrap" style="margin-top:6px;"><span class="chip-select is-on">Coxinha</span><span class="chip-select">Pão de queijo</span></div>
+              </div>
+              <div class="m-card">
+                <div class="day-tag">Suco · só sexta</div>
+                <div class="chip-wrap" style="margin-top:6px;"><span class="chip-select">Laranja</span><span class="chip-select is-on">Uva</span></div>
+              </div>
+              <div class="m-card" style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="t1">Total</span><span class="t1">R$ 9,00</span>
+              </div>
+              <div class="btn-p">Confirmar pedido</div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-home"/></svg>Início</div>
+              <div class="tab"><svg><use href="#i-person"/></svg>Meu filho</div>
+              <div class="tab active"><svg><use href="#i-building"/></svg>Escola</div>
+              <div class="tab"><svg><use href="#i-chat"/></svg>Mensagens</div>
+              <div class="tab"><svg><use href="#i-person"/></svg>Perfil</div>
+            </div>
+          </div></div>
+          <figcaption><b>Escola → Cantina</b>Chips pré-cadastrados, não texto livre. Itens indisponíveis no dia nem aparecem — o pai só vê o que é possível pedir hoje.</figcaption>
+        </figure>
+
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Termo de autorização</div>
+              <div class="phone__sub">Passeio ao Zoológico · 02/08</div>
+              <div class="m-card">
+                <div class="t2">Autorizo meu filho(a) Lucas a participar do passeio ao Zoológico Municipal em 02/08, sob responsabilidade da equipe da escola durante o trajeto e permanência...</div>
+              </div>
+              <div class="t1" style="font-size:.78rem;">Assine com o dedo para autorizar</div>
+              <div class="sig-box"><svg viewBox="0 0 100 30"><path d="M5 20 Q15 5 22 20 T40 20 Q48 8 55 20 T75 18 Q82 10 95 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div class="btn-p">Confirmar assinatura</div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-home"/></svg>Início</div>
+              <div class="tab"><svg><use href="#i-person"/></svg>Meu filho</div>
+              <div class="tab active"><svg><use href="#i-building"/></svg>Escola</div>
+              <div class="tab"><svg><use href="#i-chat"/></svg>Mensagens</div>
+              <div class="tab"><svg><use href="#i-person"/></svg>Perfil</div>
+            </div>
+          </div></div>
+          <figcaption><b>Escola → Eventos → Termo</b>Tela própria, separada da confirmação de presença simples — assinatura de passeio nunca é "só mais uma opção" num formulário.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- TELAS PROFESSOR -->
+    <section id="telas-professor">
+      <span class="eyebrow">06 · Telas</span>
+      <h2>App do professor</h2>
+      <span class="lede">Foco em velocidade: presença e postagens precisam ser feitas em segundos entre uma criança e outra.</span>
+      <div class="gallery">
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Presença</div>
+              <div class="phone__sub">Jardim II · 25/07</div>
+              <div class="m-card" style="padding:0;">
+                <div class="m-list-item" style="padding:10px 12px;"><div class="m-avatar">L</div><div class="m-text"><div class="t1">Lucas Ribeiro</div></div><span class="pill pill--green">Presente</span></div>
+                <div class="m-list-item" style="padding:10px 12px;"><div class="m-avatar">M</div><div class="m-text"><div class="t1">Maria Souza</div></div><span class="pill pill--green">Presente</span></div>
+                <div class="m-list-item" style="padding:10px 12px;"><div class="m-avatar">T</div><div class="m-text"><div class="t1">Théo Alves</div></div><span class="pill pill--red">Faltou</span></div>
+              </div>
+              <div class="btn-p">Salvar presença</div>
+              <div class="phone__sub">Visível só para você e a coordenação.</div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-home"/></svg>Hoje</div>
+              <div class="tab active"><svg><use href="#i-check"/></svg>Presença</div>
+              <div class="tab"><svg><use href="#i-plus"/></svg>Postar</div>
+              <div class="tab"><svg><use href="#i-users"/></svg>Turma</div>
+            </div>
+          </div></div>
+          <figcaption><b>Presença</b>Lista da turma com toggle rápido, tudo pré-marcado como "presente" — o professor só toca em quem faltou.</figcaption>
+        </figure>
+
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Postar</div>
+              <div class="m-card"><div class="m-row"><svg style="width:20px;height:20px;color:var(--blue-700)"><use href="#i-book"/></svg><div class="m-text"><div class="t1">Lição de casa</div><div class="t2">Para toda a turma</div></div><svg class="m-chev"><use href="#i-chevron"/></svg></div></div>
+              <div class="m-card"><div class="m-row"><svg style="width:20px;height:20px;color:var(--green-700)"><use href="#i-camera"/></svg><div class="m-text"><div class="t1">Foto da rotina</div><div class="t2">Turma toda ou 1 aluno</div></div><svg class="m-chev"><use href="#i-chevron"/></svg></div></div>
+              <div class="m-card"><div class="m-row"><svg style="width:20px;height:20px;color:var(--amber-600)"><use href="#i-edit"/></svg><div class="m-text"><div class="t1">Relatório</div><div class="t2">Turma ou individual</div></div><svg class="m-chev"><use href="#i-chevron"/></svg></div></div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-home"/></svg>Hoje</div>
+              <div class="tab"><svg><use href="#i-check"/></svg>Presença</div>
+              <div class="tab active"><svg><use href="#i-plus"/></svg>Postar</div>
+              <div class="tab"><svg><use href="#i-users"/></svg>Turma</div>
+            </div>
+          </div></div>
+          <figcaption><b>Postar</b>Hub único de criação — evita 4 botões espalhados. Cada opção abre um formulário dedicado e curto.</figcaption>
+        </figure>
+
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Nova lição de casa</div>
+              <div class="phone__sub">Jardim II · toda a turma</div>
+              <div class="m-card"><div class="t2">Título</div><div class="t1" style="margin-top:2px;">Matemática — contar até 20</div></div>
+              <div class="m-card"><div class="t2">O que fazer</div><div class="t1" style="margin-top:2px; font-weight:400;">Praticar contagem com objetos de casa</div></div>
+              <div class="m-card"><div class="t2">Entrega</div><div class="t1" style="margin-top:2px;">26/07</div></div>
+              <div class="btn-p">Publicar para a turma</div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-home"/></svg>Hoje</div>
+              <div class="tab"><svg><use href="#i-check"/></svg>Presença</div>
+              <div class="tab active"><svg><use href="#i-plus"/></svg>Postar</div>
+              <div class="tab"><svg><use href="#i-users"/></svg>Turma</div>
+            </div>
+          </div></div>
+          <figcaption><b>Postar → Lição de casa</b>Três campos, sem mais. Publicar cria automaticamente o status "Pendente" para cada aluno da turma.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- TELAS COORDENAÇÃO -->
+    <section id="telas-coordenacao">
+      <span class="eyebrow">07 · Telas</span>
+      <h2>Painel da coordenação</h2>
+      <span class="lede">Mesmo padrão mobile-first dos outros dois papéis — a coordenação também acessa do celular, mas com foco em supervisão e edição.</span>
+      <div class="gallery">
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Painel</div>
+              <div class="m-card" style="display:flex;justify-content:space-between;"><span class="t2">Pais ativos hoje</span><span class="t1">38 / 52</span></div>
+              <div class="m-card" style="display:flex;justify-content:space-between;"><span class="t2">Professores logados</span><span class="t1">4 / 4</span></div>
+              <div class="m-card" style="padding:0;">
+                <div class="m-list-item" style="padding:10px 12px;"><div class="m-text"><div class="t1">Mariana Costa</div><div class="t2">Pai · Lucas Ribeiro</div></div><span class="t2">08:52</span></div>
+                <div class="m-list-item" style="padding:10px 12px;"><div class="m-text"><div class="t1">Prof. Ana Lima</div><div class="t2">Jardim II</div></div><span class="t2">07:40</span></div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab active"><svg><use href="#i-grid"/></svg>Painel</div>
+              <div class="tab"><svg><use href="#i-edit"/></svg>Conteúdo</div>
+              <div class="tab"><svg><use href="#i-bell"/></svg>Ocorrências</div>
+              <div class="tab"><svg><use href="#i-chart"/></svg>Enquetes</div>
+            </div>
+          </div></div>
+          <figcaption><b>Painel</b>Visão de acessos de professores e pais — quem entrou e quando, sem detalhe do que fizeram (isso fica em Conteúdo).</figcaption>
+        </figure>
+
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Editar postagem</div>
+              <div class="phone__sub">Lição de casa · Prof. Ana</div>
+              <div class="m-card"><div class="t2">Entrega</div><div class="t1" style="margin-top:2px;">26/07 → <span style="color:var(--blue-700)">28/07</span></div></div>
+              <div class="m-card">
+                <div class="t2" style="margin-bottom:6px;">Histórico de edições</div>
+                <div class="m-row"><div class="m-text"><div class="t2">Coordenação alterou a data · hoje 09:10</div></div></div>
+                <div class="m-row"><div class="m-text"><div class="t2">Prof. Ana publicou · 24/07 16:00</div></div></div>
+              </div>
+              <div class="btn-p">Salvar alteração</div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-grid"/></svg>Painel</div>
+              <div class="tab active"><svg><use href="#i-edit"/></svg>Conteúdo</div>
+              <div class="tab"><svg><use href="#i-bell"/></svg>Ocorrências</div>
+              <div class="tab"><svg><use href="#i-chart"/></svg>Enquetes</div>
+            </div>
+          </div></div>
+          <figcaption><b>Conteúdo → Editar</b>Toda edição registra autor, hora e o que mudou — visível para o professor que postou originalmente.</figcaption>
+        </figure>
+
+        <figure class="mock">
+          <div class="phone"><div class="phone__inner">
+            <div class="phone__notch"></div>
+            <div class="phone__bar"><span>9:41</span><span>●●●</span></div>
+            <div class="phone__screen">
+              <div class="phone__title">Ocorrências ativas</div>
+              <div class="m-card">
+                <div class="m-row"><span class="pill pill--red pill--dot">Escalonada</span></div>
+                <div class="t1" style="margin-top:6px;">Théo Alves — febre</div>
+                <div class="t2">Pai não respondeu em 15 min · 14:02</div>
+              </div>
+              <div class="m-card">
+                <div class="m-row"><span class="pill pill--blue pill--dot">Ciente</span></div>
+                <div class="t1" style="margin-top:6px;">Lucas Ribeiro — dor de cabeça</div>
+                <div class="t2">Mãe respondeu às 14:15</div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg><use href="#i-grid"/></svg>Painel</div>
+              <div class="tab"><svg><use href="#i-edit"/></svg>Conteúdo</div>
+              <div class="tab active"><svg><use href="#i-bell"/></svg>Ocorrências</div>
+              <div class="tab"><svg><use href="#i-chart"/></svg>Enquetes</div>
+            </div>
+          </div></div>
+          <figcaption><b>Ocorrências</b>Só o que precisa de atenção da coordenação: escalonadas primeiro, depois as respondidas recentemente para acompanhamento.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- FLUXO SAÚDE -->
+    <section id="fluxo-saude">
+      <span class="eyebrow">08 · Fluxo crítico</span>
+      <h2>Saúde — do registro ao retorno</h2>
+      <span class="lede">O fluxo que substitui o WhatsApp precisa ser mais confiável que o WhatsApp. A regra central: nada fica esperando um humano perceber sozinho.</span>
+      <pre class="mermaid">
+flowchart TD
+  A[Professor registra ocorrência] --> B[Push + banner vermelho para o pai]
+  B --> C{Pai responde em 15 min?}
+  C -- Sim: Ciente --> D[Acompanhamento até retorno do aluno]
+  C -- Sim: Autoriza medicação --> E[Só medicação já autorizada por escrito]
+  E --> D
+  C -- Não --> F[Lembrete push aos 10 min]
+  F --> G{Respondeu até 15 min?}
+  G -- Não --> H[Coordenação avisada automaticamente]
+  G -- Sim --> D
+  H --> D
+  D --> I[Aluno retorna à sala normalmente]
+  I --> J[Ocorrência marcada como Resolvida]
+      </pre>
+      <div class="callout warn" style="margin-top:18px;"><strong>Decisão de projeto:</strong> o app nunca sugere medicação — só lista o que o próprio pai já autorizou por escrito antes, cadastrado no Perfil. Isso elimina a possibilidade de o app "recomendar" um remédio.</div>
+    </section>
+
+    <!-- FLUXO CANTINA -->
+    <section id="fluxo-cantina">
+      <span class="eyebrow">09 · Fluxo crítico</span>
+      <h2>Cantina — seleção, Pix, baixa manual</h2>
+      <span class="lede">Já funciona ponta a ponta no Bubble como texto livre; a mudança de UX é trocar o campo de texto por chips pré-cadastrados, mantendo o resto do fluxo (WhatsApp → Pix → baixa) como está.</span>
+      <pre class="mermaid">
+stateDiagram-v2
+  [*] --> AguardandoPagamento: Pai seleciona itens do dia e confirma
+  AguardandoPagamento --> PedidoRealizado: Secretaria recebe o Pix e dá baixa
+  PedidoRealizado --> [*]
+      </pre>
+      <p class="prose" style="color:var(--muted); font-size:.88rem; margin-top:14px;">Ao confirmar, o app monta a mensagem automaticamente (aluno, itens, valor) e abre o WhatsApp da secretaria já preenchido — a secretaria não digita nada, só confirma o recebimento do Pix no app para mudar o status.</p>
+    </section>
+
+    <!-- FLUXO LIÇÃO -->
+    <section id="fluxo-licao">
+      <span class="eyebrow">10 · Fluxo crítico</span>
+      <h2>Lição de casa — os quatro estados</h2>
+      <span class="lede">Todo item nasce Pendente. O professor classifica a entrega com um toque — os outros três estados são mutuamente exclusivos.</span>
+      <pre class="mermaid">
+stateDiagram-v2
+  [*] --> Pendente: Professor publica para a turma
+  Pendente --> EntregueCerto: Professor marca "entregue certo"
+  Pendente --> EntregueForaDoPadrao: Professor marca "fora do padrão"
+  Pendente --> Faltou: Data de entrega passou sem marcação
+      </pre>
+    </section>
+
+    <!-- FLUXO EVENTOS -->
+    <section id="fluxo-eventos">
+      <span class="eyebrow">11 · Fluxo crítico</span>
+      <h2>Eventos — presença, pagamento e termo</h2>
+      <span class="lede">Um evento gratuito só pede confirmação. Um passeio pago exige confirmação, assinatura do termo e pagamento — nessa ordem, sem pular etapa.</span>
+      <pre class="mermaid">
+flowchart TD
+  A[Coordenação cria evento] --> B[Push para os pais]
+  B --> C{Tipo de evento?}
+  C -- Gratuito --> D[Pai confirma ou recusa presença]
+  D --> H[Confirmado]
+  C -- Pago / Passeio --> E[Pai confirma presença]
+  E --> F[Assina termo de autorização]
+  F --> G[Pede pagamento via Pix p/ secretaria]
+  G --> H
+      </pre>
+      <p class="prose" style="color:var(--muted); font-size:.88rem; margin-top:14px;">A confirmação de presença fica registrada como "confirmada" mesmo antes do pagamento — a secretaria vê separadamente quem confirmou e quem já pagou, para poder cobrar quem ficou parado no meio do fluxo.</p>
+    </section>
+
+    <!-- ESTADOS -->
+    <section id="estados">
+      <span class="eyebrow">12 · Referência</span>
+      <h2>Vocabulário de estados</h2>
+      <span class="lede">A lista exata de status que o Bubble precisa guardar como opção fixa (option set), não texto livre, em cada tipo de dado.</span>
+      <div class="table-wrap">
+        <table class="spec">
+          <tr><th>Módulo</th><th>Estados</th><th>Cor</th></tr>
+          <tr><td>Lição de casa</td><td>Pendente · Entregue certo · Entregue fora do padrão · Faltou no dia</td><td><span class="pill pill--amber">●</span> <span class="pill pill--green">●</span> <span class="pill pill--blue">●</span> <span class="pill pill--red">●</span></td></tr>
+          <tr><td>Saúde</td><td>Aguardando resposta · Ciente · Medicação autorizada · Em acompanhamento · Escalonada · Resolvida</td><td><span class="pill pill--red">●</span> <span class="pill pill--blue">●</span> <span class="pill pill--green">●</span></td></tr>
+          <tr><td>Cantina</td><td>Aguardando pagamento · Pedido realizado</td><td><span class="pill pill--amber">●</span> <span class="pill pill--green">●</span></td></tr>
+          <tr><td>Eventos</td><td>Convite enviado · Confirmado · Recusado · Termo pendente · Pagamento pendente</td><td><span class="pill pill--amber">●</span> <span class="pill pill--green">●</span> <span class="pill pill--muted">●</span></td></tr>
+          <tr><td>Achados e perdidos</td><td>Reportado · Encontrado</td><td><span class="pill pill--amber">●</span> <span class="pill pill--green">●</span></td></tr>
+          <tr><td>Atestado médico</td><td>Anexado · Notificado à coordenação e professores</td><td><span class="pill pill--blue">●</span> <span class="pill pill--green">●</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- NOTIFICAÇÕES -->
+    <section id="notificacoes">
+      <span class="eyebrow">13 · Referência</span>
+      <h2>Notificações e instalação (PWA)</h2>
+      <span class="lede">Como é um web app e não um app de loja, a confiabilidade dos alertas depende de dois passos que o app precisa pedir explicitamente logo após o primeiro login.</span>
+      <div class="prose">
+        <ol style="padding-left:1.2em; margin:0;">
+          <li><strong>Adicionar à tela de início.</strong> Uma tela dedicada, só para os pais, com o passo a passo específico do aparelho (iOS Safari: Compartilhar → Adicionar à Tela de Início; Android Chrome: banner de instalação nativo). Sem isso, o app roda como aba de navegador e pode ser fechado sem aviso.</li>
+          <li><strong>Permissão de notificação com "pré-pedido".</strong> Antes do pop-up do sistema operacional, uma tela explica o porquê ("é assim que você fica sabendo de uma ocorrência de saúde na hora") — pedir a permissão do SO sem contexto tem taxa de recusa alta.</li>
+          <li><strong>Rede de segurança.</strong> Mesmo com push habilitado, o timer de escalonamento da coordenação continua ativo — o push é a via rápida, não a única.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- PRIVACIDADE -->
+    <section id="privacidade">
+      <span class="eyebrow">14 · Referência</span>
+      <h2>Privacidade e visibilidade</h2>
+      <span class="lede">Quem vê o quê — a regra que separa "da turma" de "do meu filho".</span>
+      <div class="table-wrap">
+        <table class="spec">
+          <tr><th>Conteúdo</th><th>Visível para</th></tr>
+          <tr><td>Feed geral de avisos</td><td>Todos os pais da turma</td></tr>
+          <tr><td>Fotos da rotina (turma)</td><td>Todos os pais da turma</td></tr>
+          <tr><td>Rotina individual (alimentação, sono, higiene)</td><td>Só a família do aluno</td></tr>
+          <tr><td>Mensagens privadas / saúde</td><td>Só a família, o professor e a coordenação</td></tr>
+          <tr><td>Presença</td><td>Só professor e coordenação — nunca os pais</td></tr>
+          <tr><td>Achados e perdidos</td><td>Pai que reportou, professores e coordenação da escola toda</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section id="roadmap">
+      <span class="eyebrow">15 · Referência</span>
+      <h2>Do que já existe no Bubble ao que falta</h2>
+      <span class="lede">Ordem de construção sugerida, partindo do que já está pronto.</span>
+      <div class="prose">
+        <ul style="padding-left:1.2em; margin:0;">
+          <li><span class="pill pill--green" style="margin-right:6px;">Pronto</span>Cadastro de usuário (e-mail/senha).</li>
+          <li><span class="pill pill--amber" style="margin-right:6px;">Ajustar</span>Pedido de cantina — fluxo ponta a ponta já funciona; trocar o campo de texto livre pelos chips por dia da semana (doce todo dia, salgado e suco com dia fixo). É o menor passo até a próxima entrega visível.</li>
+          <li><span class="pill pill--muted" style="margin-right:6px;">Construir</span>Casca de navegação: login → redirecionamento por papel → barra inferior de cada área. Base para tudo o resto.</li>
+          <li><span class="pill pill--muted" style="margin-right:6px;">Construir</span>Lição de casa (professor posta → pai vê status) — fluxo mais simples depois da casca de navegação.</li>
+          <li><span class="pill pill--muted" style="margin-right:6px;">Construir</span>Saúde — o mais crítico; depende do PWA/push já estar decidido, então vem depois de validar a instalação.</li>
+          <li><span class="pill pill--muted" style="margin-right:6px;">Construir</span>Eventos com termo de autorização, achados e perdidos, painel da coordenação.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- PENDÊNCIAS -->
+    <section id="pendencias">
+      <span class="eyebrow">16 · Referência</span>
+      <h2>Decisões em aberto</h2>
+      <div class="callout">
+        <strong>Pagamento direto no app.</strong> Ainda sem decisão final. O design atual assume que todo pagamento (cantina, passeios) é resolvido fora do app, via Pix + WhatsApp da secretaria — as telas de Cantina e Eventos têm um espaço reservado para status de pagamento, mas não têm um formulário de pagamento embutido. Se essa decisão mudar, o maior impacto de UI é na tela de Cantina (checkout) e na etapa final do fluxo de Eventos pagos.
+      </div>
+    </section>
+
+    <footer class="doc">Especificação preparada para orientar a construção no Bubble · paleta verde/azul/branco da escola · v1</footer>
+  </main>
+</div>
