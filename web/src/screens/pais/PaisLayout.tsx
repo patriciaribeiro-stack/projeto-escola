@@ -4,7 +4,7 @@ import { IconHome, IconPerson, IconBuilding, IconBell, IconSettings } from '../.
 import { useSession } from '../../session'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
-import type { Ocorrencia, OcorrenciaGeral } from '../../types'
+import type { Atendimento, Ocorrencia, OcorrenciaGeral } from '../../types'
 import { AtivarPush } from '../../components/AtivarPush'
 
 const tabs: TabItem[] = [
@@ -34,14 +34,18 @@ export default function PaisLayout() {
     5000,
     [alunoId],
   )
+  const { data: atendimentos } = usePolling<Atendimento[]>(async () => api.get('/atendimentos'), 8000, [])
+
   const pendentesResposta = ocorrencias?.filter((o) => o.estado === 'aguardando_resposta' || o.estado === 'escalonada') ?? []
   const ocorrenciaAtiva = pendentesResposta[0]
   const geraisPendentes = gerais?.filter((o) => !o.cientePor).length ?? 0
   const respostasEvolucaoNaoVistas = todasOcorrencias?.filter((o) => o.respostaEvolucaoTexto && !o.respostaEvolucaoVistaPeloPaiEm).length ?? 0
+  const atendimentosPendentes = atendimentos?.filter((a) => a.estado === 'aguardando_assinatura').length ?? 0
   const badgeTotal = pendentesResposta.length + geraisPendentes + respostasEvolucaoNaoVistas
 
   const tabsComBadge = tabs.map((t) => {
     if (t.to === '/pais/filho' && badgeTotal) return { ...t, icon: IconBell, badge: badgeTotal }
+    if (t.to === '/pais/escola' && atendimentosPendentes) return { ...t, badge: atendimentosPendentes }
     return t
   })
 
@@ -69,7 +73,7 @@ export default function PaisLayout() {
           <div className="mx-4 mt-3">
             <AtivarPush />
           </div>
-          {(!!ocorrenciaAtiva || !!respostasEvolucaoNaoVistas) && (
+          {(!!ocorrenciaAtiva || !!respostasEvolucaoNaoVistas || !!atendimentosPendentes) && (
           <div className="mx-4 mt-3 flex flex-col gap-2">
             {!!ocorrenciaAtiva && (
               <button
@@ -96,6 +100,19 @@ export default function PaisLayout() {
                   {respostasEvolucaoNaoVistas === 1
                     ? 'A coordenação respondeu sobre a evolução do caso. Toque para ver.'
                     : `A coordenação respondeu ${respostasEvolucaoNaoVistas} perguntas sobre evolução. Toque para ver.`}
+                </span>
+              </button>
+            )}
+            {!!atendimentosPendentes && (
+              <button
+                onClick={() => navigate('/pais/escola?tab=atendimentos')}
+                className="flex items-start gap-2 rounded-xl bg-amber-light px-3 py-2.5 text-left text-[13px] font-semibold text-amber"
+              >
+                <IconBell className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                <span>
+                  {atendimentosPendentes === 1
+                    ? 'Tem um relatório de atendimento esperando sua assinatura. Toque para ver.'
+                    : `${atendimentosPendentes} relatórios de atendimento esperando sua assinatura. Toque para ver.`}
                 </span>
               </button>
             )}

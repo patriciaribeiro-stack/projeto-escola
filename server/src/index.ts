@@ -6,7 +6,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { nanoid } from 'nanoid'
 import { loadDb } from './db.ts'
-import type { Role, LicaoEstado, OcorrenciaEstado, SessaoAtiva, VisitaStatus, AtividadeAvaliativa, PushSubscricao, MedicacaoAgendada } from './types.ts'
+import type { Role, LicaoEstado, OcorrenciaEstado, SessaoAtiva, VisitaStatus, AtividadeAvaliativa, PushSubscricao, MedicacaoAgendada, Atendimento } from './types.ts'
 
 declare global {
   namespace Express {
@@ -269,6 +269,16 @@ const PERMISSOES: Record<string, RegraPermissao> = {
   'PATCH /api/atividades-avaliativas/:id/liberar-impressao': ['coordenacao'],
   'PATCH /api/atividades-avaliativas/:id/marcar-impressa': ['recepcao'],
 
+  // Atendimentos — só a coordenação registra; assinar é exclusivo do responsável dono do atendimento
+  'POST /api/atendimentos': ['coordenacao'],
+  'PATCH /api/atendimentos/:id': ['coordenacao'],
+  'PATCH /api/atendimentos/:id/enviar-para-assinatura': ['coordenacao'],
+  'PATCH /api/atendimentos/:id/assinar': (req, params) => {
+    const atendimento = db.data.atendimentos.find((x) => x.id === params.id)
+    return !!atendimento && req.sessao!.role === 'pai' && atendimento.paiId === req.sessao!.personaId
+  },
+  'DELETE /api/atendimentos/:id': ['coordenacao'],
+
   // Eventos — coordenação organiza, família confirma presença/termo, coordenação baixa pagamento
   'POST /api/eventos': ['coordenacao'],
   'PATCH /api/eventos/:id': ['coordenacao'],
@@ -372,6 +382,8 @@ const ROTA_LABEL: Record<string, string> = {
   '/api/saidas-antecipadas/:id': 'saída antecipada',
   '/api/atividades-avaliativas': 'atividade avaliativa',
   '/api/atividades-avaliativas/:id': 'atividade avaliativa',
+  '/api/atendimentos': 'atendimento',
+  '/api/atendimentos/:id': 'atendimento',
   '/api/medicacoes': 'medicação',
   '/api/medicacoes/:id': 'medicação',
 }
@@ -427,6 +439,9 @@ const RESUMOS_ESPECIFICOS: Record<string, (req: express.Request) => string> = {
   'POST /api/medicacoes/:id/administrar': (req) => `Marcou medicação como administrada às ${req.body?.horario ?? ''}`,
   'PATCH /api/atividades-avaliativas/:id/liberar-impressao': () => 'Liberou prova para impressão',
   'PATCH /api/atividades-avaliativas/:id/marcar-impressa': () => 'Marcou prova como impressa',
+  'POST /api/atendimentos': () => 'Registrou um atendimento',
+  'PATCH /api/atendimentos/:id/enviar-para-assinatura': () => 'Enviou relatório de atendimento pra assinatura',
+  'PATCH /api/atendimentos/:id/assinar': () => 'Assinou o relatório de atendimento',
 }
 
 function gerarResumo(metodo: string, rota: string, req: express.Request): string {
@@ -1868,6 +1883,80 @@ app.post('/api/atividades-avaliativas/marcar-vistas', async (req, res) => {
   }
   await db.write()
   res.json({ ok: true })
+})
+
+// ---------- Atendimentos (conversa da coordenação com a família) ----------
+app.get('/api/atendimentos', (req, res) => {
+  const { alunoId, coordenadoraId, estado } = req.query as { alunoId?: string; coordenadoraId?: string; estado?: string }
+  let out = db.data.atendimentos
+  if (req.sessao?.role === 'pai') out = out.filter((x) => x.paiId === req.sessao!.personaId)
+  if (alunoId) out = out.filter((x) => x.alunoId === alunoId)
+  if (coordenadoraId) out = out.filter((x) => x.coordenadoraId === coordenadoraId)
+  if (estado) out = out.filter((x) => x.estado === estado)
+  res.json([...out].sort((a, b) => b.criadoEm.localeCompare(a.criadoEm)))
+})
+
+app.post('/api/atendimentos', async (req, res) => {
+  const item: Atendimento = {
+    id: id(),
+    criadoEm: now(),
+    atualizadoEm: now(),
+    audioNome: null,
+    audioTipo: null,
+    audioDataUrl: null,
+    transcricao: null,
+    resumo: null,
+    resumoGeradoPorIA: false,
+    estado: 'rascunho',
+    enviadoParaAssinaturaEm: null,
+    assinaturaDataUrl: null,
+    assinadoEm: null,
+    ...req.body,
+  }
+  db.data.atendimentos.unshift(item)
+  await db.write()
+  res.status(201).json(item)
+})
+
+app.patch('/api/atendimentos/:id', async (req, res) => {
+  const item = db.data.atendimentos.find((x) => x.id === req.params.id)
+  if (!item) return send404(res)
+  Object.assign(item, req.body, { atualizadoEm: now() })
+  await db.write()
+  res.json(item)
+})
+
+app.patch('/api/atendimentos/:id/enviar-para-assinatura', async (req, res) => {
+  const item = db.data.atendimentos.find((x) => x.id === req.params.id)
+  if (!item) return send404(res)
+  item.estado = 'aguardando_assinatura'
+  item.enviadoParaAssinaturaEm = now()
+  item.atualizadoEm = now()
+  await db.write()
+  res.json(item)
+  const aluno = db.data.alunos.find((a) => a.id === item.alunoId)
+  await enviarPushPara('pai', item.paiId, { titulo: 'Relatório de atendimento pra assinar', corpo: `Relatório da conversa sobre ${aluno?.nome ?? 'seu filho(a)'} com ${item.coordenadoraNome} está esperando sua assinatura.`, url: '/pais/escola?tab=atendimentos' })
+})
+
+app.patch('/api/atendimentos/:id/assinar', async (req, res) => {
+  const item = db.data.atendimentos.find((x) => x.id === req.params.id)
+  if (!item) return send404(res)
+  const { assinaturaDataUrl } = req.body as { assinaturaDataUrl: string }
+  item.assinaturaDataUrl = assinaturaDataUrl
+  item.estado = 'assinado'
+  item.assinadoEm = now()
+  item.atualizadoEm = now()
+  await db.write()
+  res.json(item)
+  await enviarPushPara('coordenacao', item.coordenadoraId, { titulo: 'Relatório de atendimento assinado', corpo: 'O responsável assinou o relatório de atendimento.', url: '/coordenacao/atendimentos' })
+})
+
+app.delete('/api/atendimentos/:id', async (req, res) => {
+  const antes = db.data.atendimentos.length
+  db.data.atendimentos = db.data.atendimentos.filter((x) => x.id !== req.params.id)
+  if (db.data.atendimentos.length === antes) return send404(res)
+  await db.write()
+  res.status(204).end()
 })
 
 app.get('/api/eventos', (req, res) => {

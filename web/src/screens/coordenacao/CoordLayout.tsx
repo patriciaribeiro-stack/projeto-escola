@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppShell, type TabItem } from '../../components/AppShell'
-import { IconGrid, IconBook, IconBell, IconCalendar, IconPlus, IconFolder } from '../../components/Icons'
+import { IconGrid, IconBook, IconBell, IconCalendar, IconPlus, IconFolder, IconMic } from '../../components/Icons'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
 import type { Aluno, AtividadeAvaliativa, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral } from '../../types'
@@ -13,6 +13,7 @@ const baseTabs: TabItem[] = [
   { to: '/coordenacao/notificacoes', label: 'Notificações', icon: IconBell },
   { to: '/coordenacao/registros', label: 'Registros', icon: IconFolder },
   { to: '/coordenacao/eventos', label: 'Eventos', icon: IconCalendar },
+  { to: '/coordenacao/atendimentos', label: 'Atendimentos', icon: IconMic },
 ]
 
 export default function CoordLayout() {

@@ -575,6 +575,29 @@ export interface Atividade {
   resumo: string
 }
 
+export type AtendimentoEstado = 'rascunho' | 'aguardando_assinatura' | 'assinado'
+
+export interface Atendimento {
+  id: string
+  alunoId: string
+  paiId: string
+  coordenadoraId: string
+  coordenadoraNome: string
+  data: string
+  criadoEm: string
+  atualizadoEm: string
+  audioNome: string | null
+  audioTipo: string | null
+  audioDataUrl: string | null
+  transcricao: string | null
+  resumo: string | null
+  resumoGeradoPorIA: boolean
+  estado: AtendimentoEstado
+  enviadoParaAssinaturaEm: string | null
+  assinaturaDataUrl: string | null
+  assinadoEm: string | null
+}
+
 export interface DbSchema {
   configuracao: ConfiguracaoMatricula
   diasNaoLetivos: DiaNaoLetivo[]
@@ -612,6 +635,7 @@ export interface DbSchema {
   sessoesAtivas: SessaoAtiva[]
   visitas: VisitaAgendada[]
   atividadesAvaliativas: AtividadeAvaliativa[]
+  atendimentos: Atendimento[]
   vapid: VapidConfig | null
   pushSubscricoes: PushSubscricao[]
   medicacoes: MedicacaoAgendada[]

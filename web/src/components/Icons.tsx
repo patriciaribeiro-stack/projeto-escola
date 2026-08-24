@@ -120,3 +120,11 @@ export const IconSettings = (p: SVGProps<SVGSVGElement>) => (
 export const IconFolder = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}><path d="M3.5 6.8a1.3 1.3 0 0 1 1.3-1.3h4l1.8 2h8.6a1.3 1.3 0 0 1 1.3 1.3v8.4a1.3 1.3 0 0 1-1.3 1.3H4.8a1.3 1.3 0 0 1-1.3-1.3V6.8z" /></svg>
 )
+export const IconMic = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <rect x="9" y="3.5" width="6" height="11" rx="3" />
+    <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0" />
+    <line x1="12" y1="18" x2="12" y2="21" />
+    <line x1="8.5" y1="21" x2="15.5" y2="21" />
+  </svg>
+)

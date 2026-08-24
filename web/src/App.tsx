@@ -31,6 +31,7 @@ import Notificacoes from './screens/coordenacao/Notificacoes'
 import Registros from './screens/coordenacao/Registros'
 import Eventos from './screens/coordenacao/Eventos'
 import CoordPostar from './screens/coordenacao/Postar'
+import Atendimentos from './screens/coordenacao/Atendimentos'
 
 import SecretariaLayout from './screens/secretaria/SecretariaLayout'
 import SecretariaCadastros from './screens/secretaria/Cadastros'
@@ -140,6 +141,7 @@ function Router() {
         <Route path="notificacoes" element={<Notificacoes />} />
         <Route path="registros" element={<Registros />} />
         <Route path="eventos" element={<Eventos />} />
+        <Route path="atendimentos" element={<Atendimentos />} />
       </Route>
 
       <Route
