@@ -470,27 +470,6 @@ export interface CardapioDia {
   itens: string[]
 }
 
-export type CantinaTipo = 'doce' | 'salgado' | 'suco'
-
-export interface CantinaItem {
-  id: string
-  tipo: CantinaTipo
-  nome: string
-  valor: number
-  diaSemana: number | null
-}
-
-export type CantinaPedidoEstado = 'aguardando_pagamento' | 'pedido_realizado'
-
-export interface CantinaPedido {
-  id: string
-  alunoId: string
-  data: string
-  itens: string[]
-  total: number
-  estado: CantinaPedidoEstado
-  criadoEm: string
-}
 
 export interface Presenca {
   id: string

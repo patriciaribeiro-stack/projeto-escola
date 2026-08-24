@@ -34,8 +34,6 @@ const defaultData: DbSchema = {
   eventoRespostas: [],
   achados: [],
   cardapio: [],
-  cantinaCatalogo: [],
-  cantinaPedidos: [],
   presencas: [],
   relatorios: [],
   acessos: [],

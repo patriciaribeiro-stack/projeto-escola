@@ -1,4 +1,4 @@
-import { CardapioCadastro } from '../shared/CadastrosCantina'
+import { CardapioCadastro } from '../shared/CadastroCardapio'
 
 export default function Cardapio() {
   return <CardapioCadastro />

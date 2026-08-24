@@ -4,7 +4,7 @@ import { loadDb } from './db.ts'
 import type {
   Turma, Materia, Aluno, Pai, Professor, Coordenador, Secretario, Recepcionista, MonitorIntegral, Substituto, Aviso, FotoRotina,
   Rotina, Licao, LicaoStatus, Ocorrencia, OcorrenciaGeral, Evento, EventoResposta, AchadoPerdido,
-  CardapioDia, CantinaItem, Relatorio, Acesso,
+  CardapioDia, Relatorio, Acesso,
 } from './types.ts'
 
 const SENHA_TESTE = '123456'
@@ -20,8 +20,6 @@ function svgPlaceholder(corA: string, corB: string) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
-const SALGADOS = ['Pastel de queijo', 'Pão de queijo', 'Empada de frango', 'Enroladinho de salsicha', 'Croissant de presunto e queijo', 'Coxinha', 'Mini pizza']
-const SUCOS = ['Suco de manga', 'Suco de uva', 'Suco de laranja', 'Suco de maracujá', 'Suco de abacaxi', 'Suco de morango', 'Suco de melancia']
 const CARDAPIOS = [
   { descricao: 'Arroz, feijão, frango grelhado e salada de alface com tomate', itens: ['Arroz', 'Feijão', 'Frango grelhado', 'Salada de alface com tomate'] },
   { descricao: 'Macarrão ao sugo, carne moída e cenoura refogada', itens: ['Macarrão ao sugo', 'Carne moída', 'Cenoura refogada'] },
@@ -224,14 +222,6 @@ async function main() {
     return { id: id(), data: d.toISOString().slice(0, 10), descricao: c.descricao, itens: c.itens }
   })
 
-  const cantinaCatalogo: CantinaItem[] = [
-    { id: 'doce-gelatina', tipo: 'doce', nome: 'Gelatina', valor: 3, diaSemana: null },
-    { id: 'doce-bolo', tipo: 'doce', nome: 'Bolo de cenoura', valor: 4, diaSemana: null },
-    { id: 'doce-pudim', tipo: 'doce', nome: 'Pudim', valor: 4.5, diaSemana: null },
-    ...SALGADOS.map((nome, dia) => ({ id: `salgado-${dia}`, tipo: 'salgado' as const, nome, valor: 5, diaSemana: dia })),
-    ...SUCOS.map((nome, dia) => ({ id: `suco-${dia}`, tipo: 'suco' as const, nome, valor: 4, diaSemana: dia })),
-  ]
-
   const relatorios: Relatorio[] = [
     { id: id(), alunoId: null, turmaId: turmaJardim.id, autor: 'Prof. Ana Lima', texto: 'A turma está indo muito bem com a adaptação da rotina de outono — mais interesse em atividades ao ar livre.', aulas: ['Artes', 'Educação Física'], criadoEm: daysAgo(4) },
   ]
@@ -264,8 +254,6 @@ async function main() {
   db.data.eventoRespostas = eventoRespostas
   db.data.achados = achados
   db.data.cardapio = cardapio
-  db.data.cantinaCatalogo = cantinaCatalogo
-  db.data.cantinaPedidos = []
   db.data.presencas = []
   db.data.relatorios = relatorios
   db.data.acessos = acessos

@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react'
 import { usePolling } from '../../usePolling'
 import { api } from '../../api'
 import type {
-  Aluno, CantinaItem, CantinaPedido, CardapioDia, Evento, EventoResposta, Licao, LicaoStatus, Materia,
+  Aluno, CardapioDia, Evento, EventoResposta, Licao, LicaoStatus, Materia,
   Ocorrencia, Presenca, Relatorio, Rotina, Semanario, SemanarioDia, Turma,
 } from '../../types'
-import { Button, Card, EmptyState, Pill, SectionLabel, formatBRL, formatDateBR } from '../../components/ui'
+import { Button, Card, EmptyState, Pill, SectionLabel, formatDateBR } from '../../components/ui'
 import { inputCls } from '../shared/formHelpers'
 
 type Sub = 'licoes' | 'presenca' | 'alimentacao' | 'passeios' | 'saude' | 'semanario'
@@ -631,132 +631,6 @@ function RelatorioAlimentacao({ periodo, turmaId }: { periodo: Periodo; turmaId:
       <Button
         className="mt-2.5"
         onClick={() => imprimirRelatorioAlimentacao(periodo, turmaId, rotinas, alunos, turmas ?? [], cardapios ?? [])}
-      >
-        Emitir relatório
-      </Button>
-    </Card>
-  )
-}
-
-function calcCantina(pedidosEscopo: CantinaPedido[]) {
-  const arrecadado = pedidosEscopo.filter((p) => p.estado === 'pedido_realizado').reduce((s, p) => s + p.total, 0)
-  const pendentes = pedidosEscopo.filter((p) => p.estado === 'aguardando_pagamento')
-  const valorPendente = pendentes.reduce((s, p) => s + p.total, 0)
-  return { pedidos: pedidosEscopo.length, arrecadado, qtdPendente: pendentes.length, valorPendente }
-}
-
-function imprimirRelatorioCantina(periodo: Periodo, turmaId: string, pedidos: CantinaPedido[], alunosTodos: Aluno[], turmas: Turma[], catalogo: CantinaItem[]) {
-  const nome = (id: string) => alunosTodos.find((a) => a.id === id)?.nome ?? '...'
-  const itemNome = (id: string) => catalogo.find((c) => c.id === id)?.nome ?? id
-  const turmaDoAluno = (alunoId: string) => alunosTodos.find((a) => a.id === alunoId)?.turmaId
-
-  const turmasComPedido = new Set(pedidos.map((p) => turmaDoAluno(p.alunoId)).filter(Boolean))
-  const turmasEnvolvidas = turmas.filter((t) => turmasComPedido.has(t.id))
-
-  const boxesCantina = (r: ReturnType<typeof calcCantina>) => boxesHtml([
-    { valor: r.pedidos, label: 'Pedidos no período' },
-    { valor: `R$ ${formatBRL(r.arrecadado)}`, label: 'Arrecadado (pago)' },
-    { valor: r.qtdPendente, label: 'Aguardando pagamento' },
-    { valor: `R$ ${formatBRL(r.valorPendente)}`, label: 'Valor pendente' },
-  ])
-
-  const geralHtml = turmasEnvolvidas.length > 1
-    ? `<section class="secao"><h2>Resumo geral</h2>${boxesCantina(calcCantina(pedidos))}</section>`
-    : ''
-
-  const secoesTurma = turmasEnvolvidas.map((turma) => {
-    const pedidosDaTurma = pedidos.filter((p) => turmaDoAluno(p.alunoId) === turma.id)
-    const resumo = calcCantina(pedidosDaTurma)
-
-    const pendentes = pedidosDaTurma.filter((p) => p.estado === 'aguardando_pagamento').sort((a, b) => a.data.localeCompare(b.data))
-    const alertaHtml = pendentes.length
-      ? `<table class="tabela-alerta">
-          <thead><tr><th>Aluno</th><th>Data</th><th>Valor</th></tr></thead>
-          <tbody>${pendentes.map((p) => `<tr><td>${nome(p.alunoId)}</td><td>${formatDateBR(p.data)}</td><td>R$ ${formatBRL(p.total)}</td></tr>`).join('')}</tbody>
-        </table>`
-      : `<p class="ok">Nenhum pedido aguardando pagamento nessa turma.</p>`
-
-    const porItem = new Map<string, number>()
-    for (const p of pedidosDaTurma) for (const it of p.itens) porItem.set(it, (porItem.get(it) ?? 0) + 1)
-    const itensOrdenados = [...porItem.entries()].sort((a, b) => b[1] - a[1])
-    const itensHtml = itensOrdenados.length
-      ? `<table><thead><tr><th>Item</th><th>Quantidade</th></tr></thead><tbody>${itensOrdenados.map(([id, qtd]) => `<tr><td>${itemNome(id)}</td><td>${qtd}x</td></tr>`).join('')}</tbody></table>`
-      : `<p class="ok">Nenhum item pedido nesse período.</p>`
-
-    const alunosDaTurma = [...new Set(pedidosDaTurma.map((p) => p.alunoId))]
-      .map((id) => alunosTodos.find((a) => a.id === id))
-      .filter((a): a is Aluno => !!a)
-      .sort((a, b) => a.nome.localeCompare(b.nome))
-    const statsPorAluno = alunosDaTurma.map((a) => {
-      const doAluno = pedidosDaTurma.filter((p) => p.alunoId === a.id)
-      const pago = doAluno.filter((p) => p.estado === 'pedido_realizado').reduce((s, p) => s + p.total, 0)
-      const pendente = doAluno.filter((p) => p.estado === 'aguardando_pagamento').reduce((s, p) => s + p.total, 0)
-      const itensAluno = new Map<string, number>()
-      for (const p of doAluno) for (const it of p.itens) itensAluno.set(it, (itensAluno.get(it) ?? 0) + 1)
-      const itensOrdenadosAluno = [...itensAluno.entries()].sort((a2, b2) => b2[1] - a2[1])
-      return { aluno: a, pedidos: doAluno.length, pago, pendente, itens: itensOrdenadosAluno }
-    })
-
-    const alunoHtml = `
-      <table>
-        <thead><tr><th>Aluno</th><th>Pedidos</th><th>Pago</th><th>Pendente</th></tr></thead>
-        <tbody>${statsPorAluno.map((p) => `<tr><td>${p.aluno.nome}</td><td>${p.pedidos}</td><td>R$ ${formatBRL(p.pago)}</td><td>R$ ${formatBRL(p.pendente)}</td></tr>`).join('')}</tbody>
-      </table>`
-
-    const itensPorAlunoHtml = statsPorAluno.map((p) => `
-        <div class="pendencia-aluno">
-          <b>${p.aluno.nome}</b>
-          <ul>${p.itens.map(([item, qtd]) => `<li>${itemNome(item)} — ${qtd}x</li>`).join('')}</ul>
-        </div>`).join('')
-
-    return `
-      <section class="secao">
-        <h2>${turma.nome}</h2>
-        ${boxesCantina(resumo)}
-        <h3>Alerta de pagamento pendente</h3>
-        ${alertaHtml}
-        <h3>Itens mais pedidos</h3>
-        ${itensHtml}
-        <h3>Por aluno</h3>
-        ${alunoHtml}
-        <h3>O que cada aluno mais compra</h3>
-        ${itensPorAlunoHtml}
-      </section>`
-  }).join('')
-
-  const { turmaLabel, periodoLabel } = labelTurmaPeriodo(turmaId, periodo, turmas)
-  abrirRelatorio(
-    'Relatório de Cantina',
-    turmaLabel,
-    periodoLabel,
-    geralHtml + secoesTurma,
-    'O alerta de pagamento pendente lista todos os pedidos com estado "aguardando pagamento" no período.',
-  )
-}
-
-export function RelatorioCantina({ periodo, turmaId = '' }: { periodo: Periodo; turmaId?: string }) {
-  const { data: pedidosTodos } = usePolling<CantinaPedido[]>(async () => api.get('/cantina/pedidos'), 10000, [])
-  const { data: catalogo } = usePolling<CantinaItem[]>(async () => api.get('/cantina/catalogo-completo'), 60000, [])
-  const { idsPermitidos } = useAlunosDaTurma(turmaId)
-  const { data: alunosTodos } = usePolling<Aluno[]>(async () => api.get('/alunos'), 60000, [])
-  const { data: turmas } = usePolling<Turma[]>(async () => api.get('/turmas'), 60000, [])
-
-  const pedidos = useMemo(
-    () => (pedidosTodos ?? []).filter((p) => dentroPeriodo(p.data, periodo) && idsPermitidos.has(p.alunoId)),
-    [pedidosTodos, periodo, idsPermitidos],
-  )
-
-  if (!pedidos.length) return <EmptyState>Nenhum pedido de cantina nesse período{turmaId ? ' para essa turma' : ''}.</EmptyState>
-
-  return (
-    <Card>
-      <SectionLabel>Emitir relatório</SectionLabel>
-      <p className="mt-1.5 text-[11.5px] text-muted">
-        Documento com resumo financeiro, alerta de pagamento pendente, itens mais pedidos e o que cada aluno mais compra — pronto pra imprimir ou salvar em PDF.
-      </p>
-      <Button
-        className="mt-2.5"
-        onClick={() => imprimirRelatorioCantina(periodo, turmaId, pedidos, alunosTodos ?? [], turmas ?? [], catalogo ?? [])}
       >
         Emitir relatório
       </Button>

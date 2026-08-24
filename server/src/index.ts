@@ -348,8 +348,6 @@ const ROTA_LABEL: Record<string, string> = {
   '/api/achados/:id': 'item de achados e perdidos',
   '/api/cardapio': 'cardápio',
   '/api/cardapio/:id': 'cardápio',
-  '/api/cantina/catalogo': 'item da cantina',
-  '/api/cantina/catalogo/:id': 'item da cantina',
   '/api/relatorios': 'relatório',
   '/api/atestados': 'atestado',
   '/api/saidas-antecipadas': 'saída antecipada',
@@ -404,8 +402,6 @@ const RESUMOS_ESPECIFICOS: Record<string, (req: express.Request) => string> = {
   'PATCH /api/evento-respostas/:id/presenca': () => 'Confirmou presença no evento',
   'PATCH /api/evento-respostas/:id/termo': () => 'Assinou termo do evento',
   'PATCH /api/evento-respostas/:id/pagamento': () => 'Registrou pagamento do evento',
-  'POST /api/cantina/pedidos': () => 'Fez pedido na cantina',
-  'PATCH /api/cantina/pedidos/:id': (req) => req.body?.estado === 'pedido_realizado' ? 'Confirmou pagamento de pedido da cantina' : 'Atualizou pedido da cantina',
   'POST /api/presencas/bulk': () => 'Lançou presença da turma',
   'POST /api/atividades-avaliativas': (req) => `Agendou atividade avaliativa: "${req.body?.conteudo ?? ''}"`,
   'POST /api/push/inscrever': () => 'Ativou notificações push nesse aparelho',
@@ -1962,70 +1958,6 @@ app.delete('/api/cardapio/:id', async (req, res) => {
   if (db.data.cardapio.length === antes) return send404(res)
   await db.write()
   res.status(204).end()
-})
-
-// ---------- Cantina ----------
-app.get('/api/cantina/catalogo', (req, res) => {
-  const { data } = req.query as { data?: string }
-  const d = data ? new Date(data) : new Date()
-  const diaSemana = d.getDay()
-  const out = db.data.cantinaCatalogo.filter((x) => x.diaSemana === null || x.diaSemana === diaSemana)
-  res.json(out)
-})
-
-app.get('/api/cantina/catalogo-completo', (_req, res) => {
-  res.json(db.data.cantinaCatalogo)
-})
-
-app.post('/api/cantina/catalogo', async (req, res) => {
-  const item = { id: id(), ...req.body }
-  db.data.cantinaCatalogo.push(item)
-  await db.write()
-  res.status(201).json(item)
-})
-
-app.patch('/api/cantina/catalogo/:id', async (req, res) => {
-  const item = db.data.cantinaCatalogo.find((x) => x.id === req.params.id)
-  if (!item) return send404(res)
-  Object.assign(item, req.body)
-  await db.write()
-  res.json(item)
-})
-
-app.delete('/api/cantina/catalogo/:id', async (req, res) => {
-  const antes = db.data.cantinaCatalogo.length
-  db.data.cantinaCatalogo = db.data.cantinaCatalogo.filter((x) => x.id !== req.params.id)
-  if (db.data.cantinaCatalogo.length === antes) return send404(res)
-  await db.write()
-  res.status(204).end()
-})
-
-app.get('/api/cantina/pedidos', (req, res) => {
-  const { alunoId, data } = req.query as { alunoId?: string; data?: string }
-  let out = db.data.cantinaPedidos
-  if (alunoId) out = out.filter((x) => x.alunoId === alunoId)
-  if (data) out = out.filter((x) => x.data === data)
-  res.json([...out].sort((a, b) => b.criadoEm.localeCompare(a.criadoEm)))
-})
-
-app.post('/api/cantina/pedidos', async (req, res) => {
-  const { alunoId, data, itens } = req.body as { alunoId: string; data: string; itens: string[] }
-  const catalogo = db.data.cantinaCatalogo.filter((c) => itens.includes(c.id))
-  const total = catalogo.reduce((s, c) => s + c.valor, 0)
-  const pedido = { id: id(), alunoId, data, itens, total, estado: 'aguardando_pagamento' as const, criadoEm: now() }
-  db.data.cantinaPedidos.unshift(pedido)
-  await db.write()
-  const aluno = db.data.alunos.find((a) => a.id === alunoId)
-  const texto = `Pedido de cantina — ${aluno?.nome ?? ''}\n${catalogo.map((c) => `• ${c.nome}`).join('\n')}\nTotal: R$ ${total.toFixed(2)}`
-  res.status(201).json({ pedido, whatsappTexto: texto })
-})
-
-app.patch('/api/cantina/pedidos/:id', async (req, res) => {
-  const item = db.data.cantinaPedidos.find((x) => x.id === req.params.id)
-  if (!item) return send404(res)
-  item.estado = req.body.estado ?? item.estado
-  await db.write()
-  res.json(item)
 })
 
 // ---------- Presença ----------

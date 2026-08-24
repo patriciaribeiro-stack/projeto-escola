@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CadastrosPessoas } from '../shared/CadastrosPessoas'
 import { CadastrosEscola } from '../shared/CadastrosEscola'
 import { CadastrosEquipe } from '../shared/CadastrosEquipe'
-import { CardapioCadastro } from '../shared/CadastrosCantina'
+import { CardapioCadastro } from '../shared/CadastroCardapio'
 
 type Sub = 'pessoas' | 'escola' | 'cardapio' | 'equipe'
 

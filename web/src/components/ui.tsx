@@ -20,11 +20,10 @@ export function Pill({ tone, children, dot }: { tone: PillTone; children: ReactN
   )
 }
 
-export type Categoria = 'saude' | 'cantina' | 'licoes' | 'eventos'
+export type Categoria = 'saude' | 'licoes' | 'eventos'
 
 const categoriaTom: Record<Categoria, { bg: string; text: string; border: string }> = {
   saude: { bg: 'bg-red-light', text: 'text-red', border: 'border-l-red' },
-  cantina: { bg: 'bg-amber-light', text: 'text-amber', border: 'border-l-mostarda' },
   licoes: { bg: 'bg-blue-light', text: 'text-blue', border: 'border-l-blue' },
   eventos: { bg: 'bg-blue-light', text: 'text-blue', border: 'border-l-blue' },
 }
