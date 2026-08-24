@@ -4,7 +4,7 @@ import { IconHome, IconPerson, IconBuilding, IconBell, IconSettings } from '../.
 import { useSession } from '../../session'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
-import type { Ocorrencia, OcorrenciaGeral, Reuniao } from '../../types'
+import type { Ocorrencia, OcorrenciaGeral } from '../../types'
 import { AtivarPush } from '../../components/AtivarPush'
 
 const tabs: TabItem[] = [
@@ -34,22 +34,14 @@ export default function PaisLayout() {
     5000,
     [alunoId],
   )
-  const { data: reunioes } = usePolling<Reuniao[]>(
-    async () => (alunoId ? api.get(`/reunioes${qs({ alunoId })}`) : []),
-    5000,
-    [alunoId],
-  )
-
   const pendentesResposta = ocorrencias?.filter((o) => o.estado === 'aguardando_resposta' || o.estado === 'escalonada') ?? []
   const ocorrenciaAtiva = pendentesResposta[0]
   const geraisPendentes = gerais?.filter((o) => !o.cientePor).length ?? 0
   const respostasEvolucaoNaoVistas = todasOcorrencias?.filter((o) => o.respostaEvolucaoTexto && !o.respostaEvolucaoVistaPeloPaiEm).length ?? 0
-  const reunioesAguardandoPai = reunioes?.filter((r) => r.estado === 'contraproposta').length ?? 0
   const badgeTotal = pendentesResposta.length + geraisPendentes + respostasEvolucaoNaoVistas
 
   const tabsComBadge = tabs.map((t) => {
     if (t.to === '/pais/filho' && badgeTotal) return { ...t, icon: IconBell, badge: badgeTotal }
-    if (t.to === '/pais/escola' && reunioesAguardandoPai) return { ...t, badge: reunioesAguardandoPai }
     return t
   })
 
@@ -77,7 +69,7 @@ export default function PaisLayout() {
           <div className="mx-4 mt-3">
             <AtivarPush />
           </div>
-          {(!!ocorrenciaAtiva || !!respostasEvolucaoNaoVistas || !!reunioesAguardandoPai) && (
+          {(!!ocorrenciaAtiva || !!respostasEvolucaoNaoVistas) && (
           <div className="mx-4 mt-3 flex flex-col gap-2">
             {!!ocorrenciaAtiva && (
               <button
@@ -104,19 +96,6 @@ export default function PaisLayout() {
                   {respostasEvolucaoNaoVistas === 1
                     ? 'A coordenação respondeu sobre a evolução do caso. Toque para ver.'
                     : `A coordenação respondeu ${respostasEvolucaoNaoVistas} perguntas sobre evolução. Toque para ver.`}
-                </span>
-              </button>
-            )}
-            {!!reunioesAguardandoPai && (
-              <button
-                onClick={() => navigate('/pais/escola?tab=reuniao')}
-                className="flex items-start gap-2 rounded-xl bg-blue-light px-3 py-2.5 text-left text-[13px] font-semibold text-blue"
-              >
-                <IconBell className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                <span>
-                  {reunioesAguardandoPai === 1
-                    ? 'A coordenação sugeriu outro horário pra sua reunião. Toque para ver.'
-                    : `A coordenação sugeriu outro horário em ${reunioesAguardandoPai} reuniões. Toque para ver.`}
                 </span>
               </button>
             )}

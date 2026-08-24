@@ -3,15 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import { useSession } from '../../session'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
-import type { Aluno, AtividadeAvaliativa, Coordenador, Materia, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral, Presenca, Reuniao, Turma } from '../../types'
+import type { Aluno, AtividadeAvaliativa, Materia, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral, Presenca, Turma } from '../../types'
 import { Button, Card, CategoriaChip, EmptyState, Pill, SectionLabel, formatDateBR, timeAgo } from '../../components/ui'
 import { IconCross } from '../../components/Icons'
 import { FichaMedicaView } from '../shared/FichaMedica'
 import { inputCls } from '../shared/formHelpers'
-import { ReuniaoCard } from '../shared/Reunioes'
 import { MedicacaoCard } from '../shared/Medicacoes'
 
-type Sub = 'saude' | 'gerais' | 'matriculas' | 'reunioes' | 'avaliativas' | 'medicacao'
+type Sub = 'saude' | 'gerais' | 'matriculas' | 'avaliativas' | 'medicacao'
 
 export default function Notificacoes() {
   const [params] = useSearchParams()
@@ -25,7 +24,6 @@ export default function Notificacoes() {
             ['saude', 'Saúde'],
             ['gerais', 'Ocorrências gerais'],
             ['matriculas', 'Matrículas'],
-            ['reunioes', 'Reuniões'],
             ['avaliativas', 'Provas'],
             ['medicacao', 'Medicação'],
           ] as [Sub, string][]
@@ -38,118 +36,8 @@ export default function Notificacoes() {
       {sub === 'saude' && <SaudeCoord />}
       {sub === 'gerais' && <GeraisCoord />}
       {sub === 'matriculas' && <MatriculasCoord />}
-      {sub === 'reunioes' && <ReunioesCoord />}
       {sub === 'avaliativas' && <AvaliativasCoord />}
       {sub === 'medicacao' && <MedicacaoCoord />}
-    </div>
-  )
-}
-
-function MinhaDisponibilidade({ coordenadora, onSaved }: { coordenadora: Coordenador; onSaved: () => void }) {
-  const [editando, setEditando] = useState(false)
-  const [texto, setTexto] = useState(coordenadora.disponibilidade ?? '')
-  const [salvando, setSalvando] = useState(false)
-
-  async function salvar() {
-    setSalvando(true)
-    try {
-      await api.patch(`/coordenadores/${coordenadora.id}`, { disponibilidade: texto })
-      setEditando(false)
-      onSaved()
-    } finally {
-      setSalvando(false)
-    }
-  }
-
-  return (
-    <Card>
-      <SectionLabel>Minha disponibilidade para reuniões</SectionLabel>
-      {editando ? (
-        <div className="mt-2 flex flex-col gap-2">
-          <textarea
-            autoComplete="off"
-            className={inputCls}
-            rows={2}
-            placeholder="Ex: Segundas e quartas, 14h às 17h"
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-          />
-          <div className="flex gap-2">
-            <Button className="w-auto px-3.5 py-2 text-[12.5px]" disabled={salvando} onClick={salvar}>
-              {salvando ? 'Salvando...' : 'Salvar'}
-            </Button>
-            <button
-              onClick={() => {
-                setEditando(false)
-                setTexto(coordenadora.disponibilidade ?? '')
-              }}
-              className="text-[11.5px] font-bold text-muted"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <p className="text-[12.5px] text-muted">{coordenadora.disponibilidade || 'Nenhuma disponibilidade cadastrada ainda.'}</p>
-          <button onClick={() => setEditando(true)} className="whitespace-nowrap text-[11.5px] font-bold text-blue">Editar</button>
-        </div>
-      )}
-    </Card>
-  )
-}
-
-function ReunioesCoord() {
-  const { session } = useSession()
-  const { data: reunioes, reload } = usePolling<Reuniao[]>(async () => api.get('/reunioes'), 5000, [])
-  const { data: coordenadoras, reload: reloadCoordenadoras } = usePolling<Coordenador[]>(async () => api.get('/coordenadores'), 60000, [])
-  const { data: alunos } = usePolling<Aluno[]>(async () => api.get('/alunos'), 60000, [])
-  const nome = (alunoId: string) => alunos?.find((a) => a.id === alunoId)?.nome ?? '...'
-  const minhaCoordenadora = coordenadoras?.find((c) => c.id === session?.personaId)
-  const minhasReunioes = (reunioes ?? []).filter((r) => r.coordenadoraId === session?.personaId)
-
-  const pendentesAcao = minhasReunioes.filter((r) => r.estado === 'pendente' || r.estado === 'aceita_pelo_pai')
-  const aguardandoPai = minhasReunioes.filter((r) => r.estado === 'contraproposta')
-  const encerradas = minhasReunioes.filter((r) => r.estado === 'confirmada' || r.estado === 'cancelada')
-
-  useEffect(() => {
-    const naoVistas = minhasReunioes.filter(
-      (r) => (r.estado === 'pendente' || r.estado === 'aceita_pelo_pai') && !r.vistoPelaCoordenacaoEm,
-    )
-    if (!naoVistas.length) return
-    api.post('/reunioes/marcar-vistas', { ids: naoVistas.map((r) => r.id) })
-  }, [reunioes])
-
-  return (
-    <div className="flex flex-col gap-4">
-      {!!minhaCoordenadora && <MinhaDisponibilidade coordenadora={minhaCoordenadora} onSaved={reloadCoordenadoras} />}
-
-      {!reunioes?.length && <EmptyState>Nenhuma solicitação de reunião ainda.</EmptyState>}
-
-      {!!pendentesAcao.length && (
-        <div className="flex flex-col gap-2">
-          <SectionLabel>Aguardando sua ação ({pendentesAcao.length})</SectionLabel>
-          {pendentesAcao.map((r) => (
-            <ReuniaoCard key={r.id} reuniao={r} papel="staff" autor={session?.nome ?? ''} alunoNome={nome(r.alunoId)} onReload={reload} />
-          ))}
-        </div>
-      )}
-      {!!aguardandoPai.length && (
-        <div className="flex flex-col gap-2">
-          <SectionLabel>Aguardando o responsável ({aguardandoPai.length})</SectionLabel>
-          {aguardandoPai.map((r) => (
-            <ReuniaoCard key={r.id} reuniao={r} papel="staff" autor={session?.nome ?? ''} alunoNome={nome(r.alunoId)} onReload={reload} />
-          ))}
-        </div>
-      )}
-      {!!encerradas.length && (
-        <div className="flex flex-col gap-2">
-          <SectionLabel>Encerradas</SectionLabel>
-          {encerradas.map((r) => (
-            <ReuniaoCard key={r.id} reuniao={r} papel="staff" autor={session?.nome ?? ''} alunoNome={nome(r.alunoId)} onReload={reload} />
-          ))}
-        </div>
-      )}
     </div>
   )
 }

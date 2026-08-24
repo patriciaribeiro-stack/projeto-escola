@@ -45,7 +45,6 @@ const defaultData: DbSchema = {
   saidasAntecipadas: [],
   sessoesAtivas: [],
   visitas: [],
-  reunioes: [],
   atividadesAvaliativas: [],
   vapid: null,
   pushSubscricoes: [],

@@ -3,15 +3,13 @@ import { useSearchParams } from 'react-router-dom'
 import EventosTab from './EventosTab'
 import AchadosTab from './AchadosTab'
 import AlimentacaoTab from './AlimentacaoTab'
-import ReuniaoTab from './ReuniaoTab'
 
-type Tab = 'eventos' | 'alimentacao' | 'achados' | 'reuniao'
+type Tab = 'eventos' | 'alimentacao' | 'achados'
 
 const TABS: [Tab, string][] = [
   ['eventos', 'Eventos'],
   ['alimentacao', 'Alimentação'],
   ['achados', 'Achados e Perdidos'],
-  ['reuniao', 'Reunião'],
 ]
 
 export default function Escola() {
@@ -38,7 +36,6 @@ export default function Escola() {
       {tab === 'eventos' && <EventosTab />}
       {tab === 'alimentacao' && <AlimentacaoTab />}
       {tab === 'achados' && <AchadosTab />}
-      {tab === 'reuniao' && <ReuniaoTab />}
     </div>
   )
 }

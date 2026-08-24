@@ -6,7 +6,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { nanoid } from 'nanoid'
 import { loadDb } from './db.ts'
-import type { Role, LicaoEstado, OcorrenciaEstado, SessaoAtiva, VisitaStatus, Reuniao, AtividadeAvaliativa, PushSubscricao, MedicacaoAgendada } from './types.ts'
+import type { Role, LicaoEstado, OcorrenciaEstado, SessaoAtiva, VisitaStatus, AtividadeAvaliativa, PushSubscricao, MedicacaoAgendada } from './types.ts'
 
 declare global {
   namespace Express {
@@ -104,6 +104,194 @@ app.use((req, res, next) => {
   }
   req.sessao = sessao
   next()
+})
+
+// ---------- Permissões por papel ----------
+// Antes disso, qualquer sessão válida (inclusive de pai ou aluno) conseguia chamar
+// qualquer rota de escrita da API — o app só escondia os botões errados na tela.
+// Esse middleware bloqueia escrita (POST/PATCH/PUT/DELETE) fora do papel esperado.
+// GET continua liberado pra qualquer sessão válida, como sempre foi.
+function casamPadrao(padrao: string, caminho: string): Record<string, string> | null {
+  const p = padrao.split('/').filter(Boolean)
+  const c = caminho.split('/').filter(Boolean)
+  if (p.length !== c.length) return null
+  const params: Record<string, string> = {}
+  for (let i = 0; i < p.length; i++) {
+    if (p[i]!.startsWith(':')) params[p[i]!.slice(1)] = c[i]!
+    else if (p[i] !== c[i]) return null
+  }
+  return params
+}
+
+type RegraPermissao = Role[] | ((req: express.Request, params: Record<string, string>) => boolean)
+
+const TODOS_OS_PAPEIS: Role[] = ['pai', 'professor', 'coordenacao', 'secretaria', 'recepcao', 'integral', 'substituto', 'aluno']
+
+const donoOuPapel = (papeis: Role[]) => (req: express.Request, params: Record<string, string>) =>
+  papeis.includes(req.sessao!.role) || (req.sessao!.role === 'pai' && req.sessao!.personaId === params.id)
+
+const PERMISSOES: Record<string, RegraPermissao> = {
+  // Configuração de matrícula, calendário e livro didático — secretaria (calendário/config) e coordenação (livro didático)
+  'PATCH /api/configuracao': ['secretaria'],
+  'POST /api/turmas': ['secretaria'],
+  'PATCH /api/turmas/:id': ['secretaria'],
+  'DELETE /api/turmas/:id': ['secretaria'],
+  'POST /api/materias': ['secretaria'],
+  'DELETE /api/materias/:id': ['secretaria'],
+  'POST /api/dias-nao-letivos': ['secretaria'],
+  'DELETE /api/dias-nao-letivos/:id': ['secretaria'],
+  'POST /api/unidades-livro': ['coordenacao'],
+  'DELETE /api/unidades-livro/:id': ['coordenacao'],
+  'POST /api/conteudos-dia': ['professor', 'substituto', 'coordenacao'],
+  'DELETE /api/conteudos-dia/:id': ['professor', 'substituto', 'coordenacao'],
+
+  // Cadastro de pessoas — exclusivo da secretaria, exceto o que é autoatendimento do próprio responsável
+  'POST /api/alunos': ['secretaria'],
+  'PATCH /api/alunos/:id': ['secretaria'],
+  'PATCH /api/alunos/:id/acesso': ['secretaria'],
+  'PATCH /api/alunos/:id/responsaveis': ['secretaria'],
+  'POST /api/alunos/marcar-vistos': ['coordenacao'],
+  'DELETE /api/alunos/:id': ['secretaria'],
+  'POST /api/pais': ['secretaria'],
+  'PATCH /api/pais/:id': donoOuPapel(['secretaria']),
+  'PATCH /api/pais/:id/consentimento': donoOuPapel(['secretaria']),
+  'DELETE /api/pais/:id': ['secretaria'],
+
+  // Equipe — cadastro é da secretaria; coordenação só atribui o substituto do dia
+  'POST /api/professores': ['secretaria'],
+  'PATCH /api/professores/:id': ['secretaria'],
+  'DELETE /api/professores/:id': ['secretaria'],
+  'POST /api/coordenadores': ['secretaria'],
+  'PATCH /api/coordenadores/:id': ['secretaria'],
+  'DELETE /api/coordenadores/:id': ['secretaria'],
+  'POST /api/secretarios': ['secretaria'],
+  'PATCH /api/secretarios/:id': ['secretaria'],
+  'DELETE /api/secretarios/:id': ['secretaria'],
+  'POST /api/recepcionistas': ['secretaria'],
+  'PATCH /api/recepcionistas/:id': ['secretaria'],
+  'DELETE /api/recepcionistas/:id': ['secretaria'],
+  'POST /api/monitores-integral': ['secretaria'],
+  'PATCH /api/monitores-integral/:id': ['secretaria'],
+  'DELETE /api/monitores-integral/:id': ['secretaria'],
+  'POST /api/substitutos': ['secretaria'],
+  'PATCH /api/substitutos/:id': ['secretaria', 'coordenacao'],
+  'DELETE /api/substitutos/:id': ['secretaria'],
+
+  // Semanário — professor escreve e envia, coordenação avalia
+  'POST /api/semanarios': ['professor'],
+  'PATCH /api/semanarios/:id': ['professor'],
+  'DELETE /api/semanarios/:id': ['professor'],
+  'PATCH /api/semanarios/:id/enviar': ['professor'],
+  'PATCH /api/semanarios/:id/aprovar': ['coordenacao'],
+  'PATCH /api/semanarios/:id/solicitar-alteracao': ['coordenacao'],
+
+  // Mural da turma — quem dá aula posta (professor, substituto, coordenação)
+  'POST /api/avisos': ['professor', 'substituto', 'coordenacao'],
+  'PATCH /api/avisos/:id': ['professor', 'substituto', 'coordenacao'],
+  'POST /api/fotos': ['professor', 'substituto', 'coordenacao'],
+  'DELETE /api/fotos/:publicacaoId': ['professor', 'substituto', 'coordenacao'],
+
+  // Rotina do dia (refeição, sono, higiene, aulas) — sala de aula e integral
+  'PATCH /api/rotinas/refeicao': ['professor', 'substituto', 'coordenacao', 'integral'],
+  'POST /api/rotinas/refeicao/bulk': ['professor', 'substituto', 'coordenacao', 'integral'],
+  'PATCH /api/rotinas/sono/dormiu': ['professor', 'substituto', 'coordenacao', 'integral'],
+  'PATCH /api/rotinas/sono/acordou': ['professor', 'substituto', 'coordenacao', 'integral'],
+  'POST /api/rotinas/higienizacao': ['professor', 'substituto', 'coordenacao', 'integral'],
+  'PATCH /api/rotinas/aulas': ['professor', 'substituto', 'coordenacao', 'integral'],
+  'POST /api/rotinas/aulas/bulk': ['professor', 'substituto', 'coordenacao', 'integral'],
+
+  // Lição de casa — quem dá aula cria/edita; a entrega é do responsável; observação do integral é do integral
+  'POST /api/licoes': ['professor', 'substituto', 'coordenacao'],
+  'PATCH /api/licoes/:id': ['professor', 'substituto', 'coordenacao'],
+  'DELETE /api/licoes/:id': ['professor', 'substituto', 'coordenacao'],
+  'PATCH /api/licao-status/:id': ['professor', 'substituto', 'coordenacao', 'integral'],
+  'PATCH /api/licao-status/:id/observacao-integral': ['integral'],
+  'PATCH /api/licao-status/:id/entrega': ['pai'],
+
+  // Ocorrências de saúde — sala de aula registra, coordenação libera/avalia, família responde
+  'POST /api/ocorrencias': ['professor', 'substituto', 'coordenacao'],
+  'POST /api/ocorrencias/marcar-vistas': ['coordenacao'],
+  'PATCH /api/ocorrencias/:id/liberar': ['coordenacao'],
+  'PATCH /api/ocorrencias/:id/rejeitar': ['coordenacao'],
+  'PATCH /api/ocorrencias/:id/responder': ['pai'],
+  'PATCH /api/ocorrencias/:id/resolver': ['professor', 'substituto', 'coordenacao'],
+  'PATCH /api/ocorrencias/:id/perguntar-evolucao': ['pai'],
+  'PATCH /api/ocorrencias/:id/responder-evolucao': ['coordenacao'],
+  'PATCH /api/ocorrencias/:id/marcar-evolucao-vista': ['pai'],
+  'PATCH /api/ocorrencias/:id/atestado': ['pai'],
+  'DELETE /api/ocorrencias/:id': ['coordenacao'],
+
+  // Ocorrências gerais (comportamento) — sala de aula registra, coordenação aprova, família toma ciência
+  'POST /api/ocorrencias-gerais': ['professor', 'substituto', 'coordenacao'],
+  'PATCH /api/ocorrencias-gerais/:id/ciente': ['pai'],
+  'POST /api/ocorrencias-gerais/marcar-vistas': ['coordenacao'],
+  'PATCH /api/ocorrencias-gerais/:id/aprovar': ['coordenacao'],
+  'PATCH /api/ocorrencias-gerais/:id/rejeitar': ['coordenacao'],
+  'DELETE /api/ocorrencias-gerais/:id': ['coordenacao'],
+
+  // Medicação agendada — responsável envia, recepção administra e vê, coordenação acompanha
+  'POST /api/medicacoes': ['pai'],
+  'PATCH /api/medicacoes/:id': ['pai', 'recepcao'],
+  'DELETE /api/medicacoes/:id': ['pai'],
+  'POST /api/medicacoes/:id/administrar': ['recepcao'],
+  'POST /api/medicacoes/marcar-vistas': ['coordenacao', 'recepcao'],
+
+  // Saída antecipada e atestado — pedido do responsável
+  'POST /api/saidas-antecipadas': ['pai'],
+  'DELETE /api/saidas-antecipadas/:id': ['pai'],
+  'POST /api/atestados': ['pai'],
+
+  // Visitas agendadas pelo site público — recepção administra
+  'PATCH /api/visitas/:id': ['recepcao'],
+
+  // Atividades avaliativas (provas) — quem dá aula agenda, coordenação libera, recepção imprime
+  'POST /api/atividades-avaliativas': ['professor', 'substituto', 'coordenacao'],
+  'DELETE /api/atividades-avaliativas/:id': ['professor', 'substituto', 'coordenacao'],
+  'POST /api/atividades-avaliativas/marcar-vistas': ['coordenacao'],
+  'PATCH /api/atividades-avaliativas/:id/liberar-impressao': ['coordenacao'],
+  'PATCH /api/atividades-avaliativas/:id/marcar-impressa': ['recepcao'],
+
+  // Eventos — coordenação organiza, família confirma presença/termo, coordenação baixa pagamento
+  'POST /api/eventos': ['coordenacao'],
+  'PATCH /api/eventos/:id': ['coordenacao'],
+  'PATCH /api/evento-respostas/:id/presenca': ['pai'],
+  'PATCH /api/evento-respostas/:id/termo': ['pai'],
+  'PATCH /api/evento-respostas/:id/pagamento': ['coordenacao'],
+
+  // Achados e perdidos — família reporta, coordenação baixa como encontrado
+  'POST /api/achados': ['pai'],
+  'PATCH /api/achados/:id': ['coordenacao'],
+
+  // Cardápio do almoço — secretaria e recepção
+  'POST /api/cardapio': ['secretaria', 'recepcao'],
+  'DELETE /api/cardapio/:id': ['secretaria', 'recepcao'],
+
+  // Presença e relatórios de turma — quem dá aula
+  'POST /api/presencas/bulk': ['professor', 'substituto'],
+  'POST /api/relatorios': ['professor', 'substituto', 'coordenacao'],
+
+  // Notificações push — qualquer sessão autenticada pode ativar/desativar no próprio aparelho
+  'POST /api/push/inscrever': TODOS_OS_PAPEIS,
+  'POST /api/push/desinscrever': TODOS_OS_PAPEIS,
+}
+
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api/') || req.path.startsWith('/api/sessions') || req.path.startsWith('/api/publico/')) return next()
+  if (req.method === 'GET') return next()
+  for (const chave of Object.keys(PERMISSOES)) {
+    const espaco = chave.indexOf(' ')
+    const metodo = chave.slice(0, espaco)
+    const padrao = chave.slice(espaco + 1)
+    if (metodo !== req.method) continue
+    const params = casamPadrao(padrao, req.path)
+    if (!params) continue
+    const regra = PERMISSOES[chave]!
+    const liberado = typeof regra === 'function' ? regra(req, params) : regra.includes(req.sessao!.role)
+    if (!liberado) return res.status(403).json({ erro: 'Esse acesso não tem permissão para essa ação.' })
+    return next()
+  }
+  // Rota de escrita sem regra cadastrada: nega por padrão em vez de liberar por descuido.
+  return res.status(403).json({ erro: 'Esse acesso não tem permissão para essa ação.' })
 })
 
 // ---------- Registro de atividades ----------
@@ -219,11 +407,6 @@ const RESUMOS_ESPECIFICOS: Record<string, (req: express.Request) => string> = {
   'POST /api/cantina/pedidos': () => 'Fez pedido na cantina',
   'PATCH /api/cantina/pedidos/:id': (req) => req.body?.estado === 'pedido_realizado' ? 'Confirmou pagamento de pedido da cantina' : 'Atualizou pedido da cantina',
   'POST /api/presencas/bulk': () => 'Lançou presença da turma',
-  'POST /api/reunioes': (req) => `Solicitou reunião com ${req.body?.coordenadoraNome ?? 'a coordenação'}`,
-  'PATCH /api/reunioes/:id/confirmar': () => 'Confirmou horário de reunião',
-  'PATCH /api/reunioes/:id/contrapropor': () => 'Sugeriu outro horário de reunião',
-  'PATCH /api/reunioes/:id/responder-pai': (req) => req.body?.aceita ? 'Aceitou o novo horário de reunião' : 'Recusou o novo horário de reunião',
-  'PATCH /api/reunioes/:id/cancelar': () => 'Cancelou reunião',
   'POST /api/atividades-avaliativas': (req) => `Agendou atividade avaliativa: "${req.body?.conteudo ?? ''}"`,
   'POST /api/push/inscrever': () => 'Ativou notificações push nesse aparelho',
   'POST /api/medicacoes': (req) => `Enviou medicamento pra escola: "${req.body?.nomeMedicamento ?? ''}"`,
@@ -1208,7 +1391,7 @@ app.patch('/api/ocorrencias/:id/perguntar-evolucao', async (req, res) => {
   item.respostaEvolucaoEm = null
   await db.write()
   res.json(ocorrenciaComPrazo(item))
-  await enviarPushParaPaisDoAluno(item.alunoId, { titulo: 'Pergunta da coordenação', corpo: `Perguntaram sobre a evolução de: ${item.tipo}`, url: '/pais/filho' })
+  await enviarPushParaPapel('coordenacao', { titulo: 'Pergunta sobre evolução', corpo: `O responsável perguntou sobre a evolução de: ${item.tipo}`, url: '/coordenacao/notificacoes?sub=saude' })
 })
 
 app.patch('/api/ocorrencias/:id/responder-evolucao', async (req, res) => {
@@ -1220,7 +1403,7 @@ app.patch('/api/ocorrencias/:id/responder-evolucao', async (req, res) => {
   item.respostaEvolucaoVistaPeloPaiEm = null
   await db.write()
   res.json(ocorrenciaComPrazo(item))
-  await enviarPushParaPapel('coordenacao', { titulo: 'Resposta sobre evolução', corpo: `O responsável respondeu sobre ${item.tipo}.`, url: '/coordenacao/notificacoes?sub=saude' })
+  await enviarPushParaPaisDoAluno(item.alunoId, { titulo: 'Resposta sobre evolução', corpo: `A coordenação respondeu sobre ${item.tipo}.`, url: '/pais/filho' })
 })
 
 app.patch('/api/ocorrencias/:id/marcar-evolucao-vista', async (req, res) => {
@@ -1566,106 +1749,6 @@ app.patch('/api/visitas/:id', async (req, res) => {
   item.status = status as VisitaStatus
   await db.write()
   res.json(item)
-})
-
-// ---------- Reuniões (agendamento com a coordenação) ----------
-app.get('/api/reunioes', (req, res) => {
-  const { alunoId, paiId } = req.query as { alunoId?: string; paiId?: string }
-  let out = db.data.reunioes
-  if (alunoId) out = out.filter((x) => x.alunoId === alunoId)
-  if (paiId) out = out.filter((x) => x.paiId === paiId)
-  res.json([...out].sort((a, b) => b.atualizadoEm.localeCompare(a.atualizadoEm)))
-})
-
-app.post('/api/reunioes', async (req, res) => {
-  const item: Reuniao = {
-    id: id(),
-    estado: 'pendente',
-    horarioSugeridoCoordenacao: null,
-    horarioConfirmado: null,
-    respondidoPor: null,
-    criadoEm: now(),
-    atualizadoEm: now(),
-    vistoPelaCoordenacaoEm: null,
-    vistoPeloPaiEm: now(),
-    ...req.body,
-  }
-  db.data.reunioes.unshift(item)
-  await db.write()
-  res.status(201).json(item)
-  await enviarPushPara('coordenacao', item.coordenadoraId, { titulo: 'Nova solicitação de reunião', corpo: item.motivo, url: '/coordenacao/notificacoes?sub=reunioes' })
-})
-
-app.patch('/api/reunioes/:id/confirmar', async (req, res) => {
-  const item = db.data.reunioes.find((x) => x.id === req.params.id)
-  if (!item) return send404(res)
-  item.horarioConfirmado = item.estado === 'aceita_pelo_pai' ? item.horarioSugeridoCoordenacao : item.horarioSugeridoPai
-  item.estado = 'confirmada'
-  item.respondidoPor = req.body.respondidoPor ?? null
-  item.atualizadoEm = now()
-  item.vistoPeloPaiEm = null
-  await db.write()
-  res.json(item)
-  await enviarPushPara('pai', item.paiId, { titulo: 'Reunião confirmada', corpo: `Sua reunião com ${item.coordenadoraNome} foi confirmada.`, url: '/pais/escola?tab=reuniao' })
-})
-
-app.patch('/api/reunioes/:id/contrapropor', async (req, res) => {
-  const item = db.data.reunioes.find((x) => x.id === req.params.id)
-  if (!item) return send404(res)
-  const { horario, respondidoPor } = req.body as { horario: string; respondidoPor?: string }
-  item.horarioSugeridoCoordenacao = horario
-  item.estado = 'contraproposta'
-  item.respondidoPor = respondidoPor ?? null
-  item.atualizadoEm = now()
-  item.vistoPeloPaiEm = null
-  await db.write()
-  res.json(item)
-  await enviarPushPara('pai', item.paiId, { titulo: 'Novo horário de reunião sugerido', corpo: `${item.coordenadoraNome} sugeriu outro horário.`, url: '/pais/escola?tab=reuniao' })
-})
-
-app.patch('/api/reunioes/:id/responder-pai', async (req, res) => {
-  const item = db.data.reunioes.find((x) => x.id === req.params.id)
-  if (!item) return send404(res)
-  const { aceita } = req.body as { aceita: boolean }
-  item.estado = aceita ? 'aceita_pelo_pai' : 'pendente'
-  item.atualizadoEm = now()
-  item.vistoPelaCoordenacaoEm = null
-  await db.write()
-  res.json(item)
-  await enviarPushPara('coordenacao', item.coordenadoraId, {
-    titulo: 'Resposta sobre reunião',
-    corpo: aceita ? 'O responsável aceitou o horário sugerido.' : 'O responsável pediu outro horário.',
-    url: '/coordenacao/notificacoes?sub=reunioes',
-  })
-})
-
-app.patch('/api/reunioes/:id/cancelar', async (req, res) => {
-  const item = db.data.reunioes.find((x) => x.id === req.params.id)
-  if (!item) return send404(res)
-  item.estado = 'cancelada'
-  item.atualizadoEm = now()
-  item.vistoPelaCoordenacaoEm = null
-  item.vistoPeloPaiEm = null
-  await db.write()
-  res.json(item)
-})
-
-app.post('/api/reunioes/marcar-vistas', async (req, res) => {
-  const { ids } = req.body as { ids: string[] }
-  for (const item of db.data.reunioes) {
-    if (ids.includes(item.id)) item.vistoPelaCoordenacaoEm = now()
-  }
-  await db.write()
-  res.json({ ok: true })
-})
-
-app.post('/api/reunioes/marcar-vistas-pai', async (req, res) => {
-  const { ids } = req.body as { ids: string[] }
-  for (const item of db.data.reunioes) {
-    if (ids.includes(item.id)) item.vistoPeloPaiEm = now()
-  }
-  await db.write()
-  res.json({ ok: true })
 })
 
 // ---------- Atividades avaliativas (provas/trabalhos agendados pelo professor) ----------

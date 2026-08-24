@@ -41,7 +41,6 @@ import RecepcaoLayout from './screens/recepcao/RecepcaoLayout'
 import RecepcaoVisitas from './screens/recepcao/Visitas'
 import RecepcaoCardapio from './screens/recepcao/Cardapio'
 import RecepcaoMedicacao from './screens/recepcao/Medicacao'
-import RecepcaoReunioes from './screens/recepcao/Reunioes'
 import RecepcaoImpressao from './screens/recepcao/Impressao'
 
 import IntegralLayout from './screens/integral/IntegralLayout'
@@ -168,7 +167,6 @@ function Router() {
         <Route index element={<RecepcaoVisitas />} />
         <Route path="cardapio" element={<RecepcaoCardapio />} />
         <Route path="medicacao" element={<RecepcaoMedicacao />} />
-        <Route path="reunioes" element={<RecepcaoReunioes />} />
         <Route path="impressao" element={<RecepcaoImpressao />} />
       </Route>
 

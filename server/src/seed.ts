@@ -90,7 +90,7 @@ async function main() {
   ]
 
   const coordenadores: Coordenador[] = [
-    { id: 'coord-beatriz', nome: 'Beatriz Nunes', telefone: '11999990201', disponibilidade: null, senhaHash: senhaHashTeste, bloqueadoEm: null },
+    { id: 'coord-beatriz', nome: 'Beatriz Nunes', telefone: '11999990201', senhaHash: senhaHashTeste, bloqueadoEm: null },
   ]
 
   const secretarios: Secretario[] = [

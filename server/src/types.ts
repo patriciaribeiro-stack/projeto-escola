@@ -168,7 +168,6 @@ export interface Coordenador {
   id: string
   nome: string
   telefone: string
-  disponibilidade: string | null
   senhaHash: string
   bloqueadoEm: string | null
 }
@@ -455,28 +454,6 @@ export interface MedicacaoAgendada {
   lembretesEnviados: string[]
 }
 
-export type ReuniaoTipo = 'online' | 'ligacao' | 'presencial'
-export type ReuniaoEstado = 'pendente' | 'contraproposta' | 'aceita_pelo_pai' | 'confirmada' | 'cancelada'
-
-export interface Reuniao {
-  id: string
-  alunoId: string
-  paiId: string
-  coordenadoraId: string
-  coordenadoraNome: string
-  motivo: string
-  tipo: ReuniaoTipo
-  horarioSugeridoPai: string
-  horarioSugeridoCoordenacao: string | null
-  horarioConfirmado: string | null
-  estado: ReuniaoEstado
-  respondidoPor: string | null
-  criadoEm: string
-  atualizadoEm: string
-  vistoPelaCoordenacaoEm: string | null
-  vistoPeloPaiEm: string | null
-}
-
 export type EventoTipo = 'gratuito' | 'pago'
 
 export interface Evento {
@@ -656,7 +633,6 @@ export interface DbSchema {
   saidasAntecipadas: SaidaAntecipada[]
   sessoesAtivas: SessaoAtiva[]
   visitas: VisitaAgendada[]
-  reunioes: Reuniao[]
   atividadesAvaliativas: AtividadeAvaliativa[]
   vapid: VapidConfig | null
   pushSubscricoes: PushSubscricao[]

@@ -3,8 +3,7 @@ import { AppShell, type TabItem } from '../../components/AppShell'
 import { IconGrid, IconBook, IconBell, IconCalendar, IconPlus, IconFolder } from '../../components/Icons'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
-import { useSession } from '../../session'
-import type { Aluno, AtividadeAvaliativa, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral, Reuniao } from '../../types'
+import type { Aluno, AtividadeAvaliativa, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral } from '../../types'
 import { AtivarPush } from '../../components/AtivarPush'
 
 const baseTabs: TabItem[] = [
@@ -18,7 +17,6 @@ const baseTabs: TabItem[] = [
 
 export default function CoordLayout() {
   const navigate = useNavigate()
-  const { session } = useSession()
   const { data: gerais } = usePolling<OcorrenciaGeral[]>(
     async () => api.get('/ocorrencias-gerais'),
     6000,
@@ -37,15 +35,11 @@ export default function CoordLayout() {
     (o.estado === 'ciente' || o.estado === 'medicacao_autorizada' || o.estado === 'indo_buscar') && !o.vistoPelaCoordenacaoEm,
   ).length ?? 0
   const matriculasNovas = alunos?.filter((a) => !a.vistoPelaCoordenacaoEm).length ?? 0
-  const { data: reunioes } = usePolling<Reuniao[]>(async () => api.get('/reunioes'), 6000, [])
-  const reunioesPendentes = reunioes?.filter(
-    (r) => r.coordenadoraId === session?.personaId && (r.estado === 'pendente' || r.estado === 'aceita_pelo_pai') && !r.vistoPelaCoordenacaoEm,
-  ).length ?? 0
   const { data: atividadesAvaliativas } = usePolling<AtividadeAvaliativa[]>(async () => api.get('/atividades-avaliativas'), 8000, [])
   const avaliativasNaoVistas = atividadesAvaliativas?.filter((a) => !a.vistoPelaCoordenacaoEm).length ?? 0
   const { data: medicacoes } = usePolling<MedicacaoAgendada[]>(async () => api.get('/medicacoes'), 8000, [])
   const medicacoesNaoVistas = medicacoes?.filter((m) => !m.vistoPelaCoordenacaoEm).length ?? 0
-  const totalBadge = pendentes + respondidas + aguardandoLiberacaoSaude + respondidasSaude + matriculasNovas + reunioesPendentes + avaliativasNaoVistas + medicacoesNaoVistas
+  const totalBadge = pendentes + respondidas + aguardandoLiberacaoSaude + respondidasSaude + matriculasNovas + avaliativasNaoVistas + medicacoesNaoVistas
 
   const tabs = baseTabs.map((t) => (t.to === '/coordenacao/notificacoes' && totalBadge ? { ...t, badge: totalBadge } : t))
 
@@ -58,7 +52,7 @@ export default function CoordLayout() {
           <div className="mx-4 mt-3">
             <AtivarPush />
           </div>
-          {(!!pendentes || !!respondidas || !!aguardandoLiberacaoSaude || !!respondidasSaude || !!matriculasNovas || !!reunioesPendentes || !!avaliativasNaoVistas || !!medicacoesNaoVistas) && (
+          {(!!pendentes || !!respondidas || !!aguardandoLiberacaoSaude || !!respondidasSaude || !!matriculasNovas || !!avaliativasNaoVistas || !!medicacoesNaoVistas) && (
           <div className="mx-4 mt-3 flex flex-col gap-2">
             {!!aguardandoLiberacaoSaude && (
               <button
@@ -118,19 +112,6 @@ export default function CoordLayout() {
                 <IconBell className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <span>
                   {matriculasNovas === 1 ? 'Há 1 aluno novo matriculado.' : `Há ${matriculasNovas} alunos novos matriculados.`} Toque para ver.
-                </span>
-              </button>
-            )}
-            {!!reunioesPendentes && (
-              <button
-                onClick={() => navigate('/coordenacao/notificacoes?sub=reunioes')}
-                className="flex items-start gap-2 rounded-xl bg-blue-light px-3 py-2.5 text-left text-[13px] font-semibold text-blue"
-              >
-                <IconBell className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                <span>
-                  {reunioesPendentes === 1
-                    ? 'Há 1 solicitação de reunião aguardando sua ação.'
-                    : `Há ${reunioesPendentes} solicitações de reunião aguardando sua ação.`} Toque para ver.
                 </span>
               </button>
             )}

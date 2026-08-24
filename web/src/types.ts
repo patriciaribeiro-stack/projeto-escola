@@ -154,7 +154,6 @@ export interface Coordenador {
   id: string
   nome: string
   telefone: string
-  disponibilidade: string | null
   bloqueadoEm: string | null
 }
 
@@ -420,28 +419,6 @@ export interface MedicacaoAgendada {
   ativo: boolean
   administracoes: MedicacaoAdministracao[]
   lembretesEnviados: string[]
-}
-
-export type ReuniaoTipo = 'online' | 'ligacao' | 'presencial'
-export type ReuniaoEstado = 'pendente' | 'contraproposta' | 'aceita_pelo_pai' | 'confirmada' | 'cancelada'
-
-export interface Reuniao {
-  id: string
-  alunoId: string
-  paiId: string
-  coordenadoraId: string
-  coordenadoraNome: string
-  motivo: string
-  tipo: ReuniaoTipo
-  horarioSugeridoPai: string
-  horarioSugeridoCoordenacao: string | null
-  horarioConfirmado: string | null
-  estado: ReuniaoEstado
-  respondidoPor: string | null
-  criadoEm: string
-  atualizadoEm: string
-  vistoPelaCoordenacaoEm: string | null
-  vistoPeloPaiEm: string | null
 }
 
 export type EventoTipo = 'gratuito' | 'pago'
