@@ -75,6 +75,24 @@ async function enviarPushParaPaisDoAluno(alunoId: string, payload: { titulo: str
   }
 }
 
+async function enviarPushParaPaisDaTurma(turmaId: string, payload: { titulo: string; corpo: string; url?: string }) {
+  const alunosDaTurma = db.data.alunos.filter((a) => a.turmaId === turmaId)
+  const paisJaAvisados = new Set<string>()
+  for (const aluno of alunosDaTurma) {
+    for (const pai of paisDoAluno(aluno.id)) {
+      if (paisJaAvisados.has(pai.id)) continue
+      paisJaAvisados.add(pai.id)
+      await enviarPushPara('pai', pai.id, payload)
+    }
+  }
+}
+
+async function enviarPushParaProfessoresDaTurma(turmaId: string, payload: { titulo: string; corpo: string; url?: string }) {
+  for (const professor of db.data.professores.filter((p) => p.turmaIds.includes(turmaId))) {
+    await enviarPushPara('professor', professor.id, payload)
+  }
+}
+
 const app = express()
 app.use(cors())
 app.use(express.json({ limit: '60mb' }))
@@ -982,6 +1000,7 @@ app.patch('/api/semanarios/:id/enviar', async (req, res) => {
   item.atualizadoEm = now()
   await db.write()
   res.json(item)
+  await enviarPushParaPapel('coordenacao', { titulo: 'Semanário enviado', corpo: `${item.professorNome} enviou o semanário da turma para aprovação.`, url: '/coordenacao/turma' })
 })
 
 app.patch('/api/semanarios/:id/aprovar', async (req, res) => {
@@ -993,6 +1012,7 @@ app.patch('/api/semanarios/:id/aprovar', async (req, res) => {
   item.atualizadoEm = now()
   await db.write()
   res.json(item)
+  await enviarPushPara('professor', item.professorId, { titulo: 'Semanário aprovado', corpo: 'A coordenação aprovou seu semanário.', url: '/professor/semanario' })
 })
 
 app.patch('/api/semanarios/:id/solicitar-alteracao', async (req, res) => {
@@ -1005,6 +1025,7 @@ app.patch('/api/semanarios/:id/solicitar-alteracao', async (req, res) => {
   item.atualizadoEm = now()
   await db.write()
   res.json(item)
+  await enviarPushPara('professor', item.professorId, { titulo: 'Alteração pedida no semanário', corpo: 'A coordenação pediu uma alteração no seu semanário.', url: '/professor/semanario' })
 })
 
 app.delete('/api/semanarios/:id', async (req, res) => {
@@ -1026,6 +1047,7 @@ app.post('/api/avisos', async (req, res) => {
   db.data.avisos.unshift(item)
   await db.write()
   res.status(201).json(item)
+  await enviarPushParaPaisDaTurma(item.turmaId, { titulo: 'Novo aviso da turma', corpo: item.texto, url: '/pais' })
 })
 
 app.patch('/api/avisos/:id', async (req, res) => {
@@ -1079,6 +1101,7 @@ app.post('/api/fotos', async (req, res) => {
   db.data.fotos.push(...novasFotos)
   await db.write()
   res.status(201).json(novasFotos)
+  await enviarPushParaPaisDaTurma(turmaId, { titulo: 'Novas fotos da turma', corpo: legenda || 'Novas fotos da rotina foram publicadas.', url: '/pais' })
 })
 
 app.delete('/api/fotos/:publicacaoId', async (req, res) => {
@@ -1197,6 +1220,7 @@ app.post('/api/licoes', async (req, res) => {
   }
   await db.write()
   res.status(201).json(licao)
+  await enviarPushParaPaisDaTurma(licao.turmaId, { titulo: 'Nova lição de casa', corpo: licao.titulo, url: '/pais/filho' })
 })
 
 app.patch('/api/licoes/:id', async (req, res) => {
@@ -1269,6 +1293,11 @@ app.patch('/api/licao-status/:id/entrega', async (req, res) => {
   item.entregaEm = now()
   await db.write()
   res.json(item)
+  const licao = db.data.licoes.find((l) => l.id === item.licaoId)
+  const aluno = db.data.alunos.find((a) => a.id === item.alunoId)
+  if (licao) {
+    await enviarPushParaProfessoresDaTurma(licao.turmaId, { titulo: 'Lição de casa entregue', corpo: `${aluno?.nome ?? 'Um aluno'} entregou "${licao.titulo}".`, url: '/professor/postar' })
+  }
 })
 
 // ---------- Ocorrências de saúde ----------
@@ -1440,6 +1469,7 @@ app.post('/api/ocorrencias-gerais', async (req, res) => {
   const item = {
     id: id(), registradoEm: now(), estado: 'pendente_aprovacao' as const,
     avaliadoPor: null, avaliadoEm: null, cientePor: null, cienteEm: null, vistoPelaCoordenacaoEm: null,
+    registradoPorRole: req.sessao?.role ?? null, registradoPorPersonaId: req.sessao?.personaId ?? null,
     ...req.body,
   }
   db.data.ocorrenciasGerais.unshift(item)
@@ -1486,6 +1516,9 @@ app.patch('/api/ocorrencias-gerais/:id/rejeitar', async (req, res) => {
   item.avaliadoEm = now()
   await db.write()
   res.json(item)
+  if (item.registradoPorRole && item.registradoPorPersonaId) {
+    await enviarPushPara(item.registradoPorRole, item.registradoPorPersonaId, { titulo: 'Ocorrência rejeitada', corpo: `A coordenação rejeitou: "${item.titulo}".`, url: '/professor/acompanhar' })
+  }
 })
 
 app.delete('/api/ocorrencias-gerais/:id', async (req, res) => {
@@ -1668,6 +1701,8 @@ app.post('/api/atestados', async (req, res) => {
   logEdit('atestado', item.id, `Atestado de ${aluno?.nome ?? 'aluno'} notificado à coordenação e aos professores`, 'Sistema')
   await db.write()
   res.status(201).json(item)
+  await enviarPushParaPapel('coordenacao', { titulo: 'Atestado médico enviado', corpo: `${aluno?.nome ?? 'Um aluno'} enviou um atestado.`, url: '/coordenacao/registros' })
+  if (aluno) await enviarPushParaProfessoresDaTurma(aluno.turmaId, { titulo: 'Atestado médico enviado', corpo: `${aluno.nome} enviou um atestado.`, url: '/professor/turma' })
 })
 
 // ---------- Saída antecipada ----------
@@ -1685,6 +1720,11 @@ app.post('/api/saidas-antecipadas', async (req, res) => {
   db.data.saidasAntecipadas.unshift(item)
   await db.write()
   res.status(201).json(item)
+  const aluno = db.data.alunos.find((a) => a.id === item.alunoId)
+  const payload = { titulo: 'Saída antecipada', corpo: `${aluno?.nome ?? 'Um aluno'} vai sair mais cedo hoje, às ${item.horario}.`, url: '/coordenacao/registros' }
+  await enviarPushParaPapel('coordenacao', payload)
+  await enviarPushParaPapel('recepcao', { ...payload, url: '/recepcao' })
+  await enviarPushParaProfessoresDaTurma(item.turmaId, { ...payload, url: '/professor/turma' })
 })
 
 app.delete('/api/saidas-antecipadas/:id', async (req, res) => {
@@ -1887,6 +1927,12 @@ app.patch('/api/evento-respostas/:id/presenca', async (req, res) => {
   item.presenca = presenca
   await db.write()
   res.json(item)
+  const aluno = db.data.alunos.find((a) => a.id === item.alunoId)
+  await enviarPushParaPapel('coordenacao', {
+    titulo: presenca === 'confirmado' ? 'Presença confirmada em evento' : 'Presença recusada em evento',
+    corpo: `${aluno?.nome ?? 'Um responsável'} — ${evento?.titulo ?? 'evento'}.`,
+    url: '/coordenacao/eventos',
+  })
 })
 
 app.patch('/api/evento-respostas/:id/termo', async (req, res) => {
@@ -1906,6 +1952,8 @@ app.patch('/api/evento-respostas/:id/pagamento', async (req, res) => {
   item.pagamento = 'realizado'
   await db.write()
   res.json(item)
+  const evento = db.data.eventos.find((e) => e.id === item.eventoId)
+  await enviarPushParaPaisDoAluno(item.alunoId, { titulo: 'Pagamento confirmado', corpo: `Seu pagamento de "${evento?.titulo ?? 'evento'}" foi registrado.`, url: '/pais/escola' })
 })
 
 // ---------- Achados e perdidos ----------
@@ -1923,9 +1971,13 @@ app.post('/api/achados', async (req, res) => {
 app.patch('/api/achados/:id', async (req, res) => {
   const item = db.data.achados.find((x) => x.id === req.params.id)
   if (!item) return send404(res)
+  const estadoAnterior = item.estado
   item.estado = req.body.estado ?? item.estado
   await db.write()
   res.json(item)
+  if (estadoAnterior !== 'encontrado' && item.estado === 'encontrado') {
+    await enviarPushParaPaisDoAluno(item.alunoId, { titulo: 'Item encontrado', corpo: `"${item.descricao}" foi encontrado — pode buscar na recepção.`, url: '/pais/escola?tab=achados' })
+  }
 })
 
 // ---------- Almoço ----------

@@ -383,6 +383,8 @@ export interface OcorrenciaGeral {
   titulo: string
   descricao: string
   registradoPor: string
+  registradoPorRole?: Role | null
+  registradoPorPersonaId?: string | null
   registradoEm: string
   estado: OcorrenciaGeralEstado
   avaliadoPor: string | null
