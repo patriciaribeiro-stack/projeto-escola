@@ -26,5 +26,8 @@
     "@types/web-push": "^3.6.4",
     "tsx": "^4.23.1",
     "typescript": "^7.0.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
   }
 }
