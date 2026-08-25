@@ -245,7 +245,7 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
 const MAX_FOTOS_POR_LOTE = 20
 const MAX_MB_POR_FOTO = 3
 
-function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: string; onDone: () => void }) {
+export function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: string; onDone: () => void }) {
   const [legenda, setLegenda] = useState('')
   const [fotos, setFotos] = useState<Anexo[]>([])
   const [erro, setErro] = useState('')

@@ -138,6 +138,7 @@ export interface Professor {
   turmaIds: string[]
   vinculos: { turmaId: string; materiaId: string }[]
   atuaNoIntegral: boolean
+  turmasIntegral?: string[]
   bloqueadoEm: string | null
 }
 
@@ -390,6 +391,35 @@ export interface AtividadeAvaliativa {
   provaLiberadaParaImpressao: boolean
   provaLiberadaEm: string | null
   provaLiberadaPor: string | null
+  provaImpressaEm: string | null
+  provaImpressaPor: string | null
+}
+
+export type ProvaTrimestralEstado =
+  | 'aguardando_envio'
+  | 'aguardando_aprovacao'
+  | 'alteracao_necessaria'
+  | 'liberada_impressao'
+  | 'impressa'
+
+export interface ProvaTrimestral {
+  id: string
+  turmaId: string
+  materiaId: string
+  data: string
+  anoLetivo: number
+  trimestre: 1 | 2 | 3
+  criadoPor: string
+  criadoEm: string
+  professorId: string | null
+  professorNome: string | null
+  arquivoNome: string | null
+  arquivoTipo: string | null
+  arquivoDataUrl: string | null
+  estado: ProvaTrimestralEstado
+  comentarioCoordenacao: string | null
+  avaliadoPor: string | null
+  avaliadoEm: string | null
   provaImpressaEm: string | null
   provaImpressaPor: string | null
 }

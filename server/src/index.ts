@@ -6,7 +6,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { nanoid } from 'nanoid'
 import { loadDb } from './db.ts'
-import type { Role, LicaoEstado, OcorrenciaEstado, SessaoAtiva, VisitaStatus, AtividadeAvaliativa, PushSubscricao, MedicacaoAgendada, Atendimento } from './types.ts'
+import type { Role, LicaoEstado, OcorrenciaEstado, SessaoAtiva, VisitaStatus, AtividadeAvaliativa, PushSubscricao, MedicacaoAgendada, Atendimento, ProvaTrimestral } from './types.ts'
 
 declare global {
   namespace Express {
@@ -223,7 +223,7 @@ const PERMISSOES: Record<string, RegraPermissao> = {
   'PATCH /api/licoes/:id': ['professor', 'substituto', 'coordenacao'],
   'DELETE /api/licoes/:id': ['professor', 'substituto', 'coordenacao'],
   'PATCH /api/licao-status/:id': ['professor', 'substituto', 'coordenacao', 'integral'],
-  'PATCH /api/licao-status/:id/observacao-integral': ['integral'],
+  'PATCH /api/licao-status/:id/observacao-integral': ['integral', 'professor'],
   'PATCH /api/licao-status/:id/entrega': ['pai'],
 
   // Ocorrências de saúde — sala de aula registra, coordenação libera/avalia, família responde
@@ -268,6 +268,15 @@ const PERMISSOES: Record<string, RegraPermissao> = {
   'POST /api/atividades-avaliativas/marcar-vistas': ['coordenacao'],
   'PATCH /api/atividades-avaliativas/:id/liberar-impressao': ['coordenacao'],
   'PATCH /api/atividades-avaliativas/:id/marcar-impressa': ['recepcao'],
+
+  // Provas trimestrais — coordenação monta o calendário, quem dá aula anexa o arquivo,
+  // coordenação aprova/pede alteração, recepção marca como impressa. Nunca chega pros pais.
+  'POST /api/provas-trimestrais': ['coordenacao'],
+  'DELETE /api/provas-trimestrais/:id': ['coordenacao'],
+  'PATCH /api/provas-trimestrais/:id/anexar': ['professor', 'substituto', 'coordenacao'],
+  'PATCH /api/provas-trimestrais/:id/aprovar': ['coordenacao'],
+  'PATCH /api/provas-trimestrais/:id/solicitar-alteracao': ['coordenacao'],
+  'PATCH /api/provas-trimestrais/:id/marcar-impressa': ['recepcao'],
 
   // Atendimentos — só a coordenação registra; assinar é exclusivo do responsável dono do atendimento
   'POST /api/atendimentos': ['coordenacao'],
@@ -382,6 +391,8 @@ const ROTA_LABEL: Record<string, string> = {
   '/api/saidas-antecipadas/:id': 'saída antecipada',
   '/api/atividades-avaliativas': 'atividade avaliativa',
   '/api/atividades-avaliativas/:id': 'atividade avaliativa',
+  '/api/provas-trimestrais': 'prova trimestral',
+  '/api/provas-trimestrais/:id': 'prova trimestral',
   '/api/atendimentos': 'atendimento',
   '/api/atendimentos/:id': 'atendimento',
   '/api/medicacoes': 'medicação',
@@ -439,6 +450,10 @@ const RESUMOS_ESPECIFICOS: Record<string, (req: express.Request) => string> = {
   'POST /api/medicacoes/:id/administrar': (req) => `Marcou medicação como administrada às ${req.body?.horario ?? ''}`,
   'PATCH /api/atividades-avaliativas/:id/liberar-impressao': () => 'Liberou prova para impressão',
   'PATCH /api/atividades-avaliativas/:id/marcar-impressa': () => 'Marcou prova como impressa',
+  'PATCH /api/provas-trimestrais/:id/anexar': () => 'Anexou o arquivo da prova trimestral',
+  'PATCH /api/provas-trimestrais/:id/aprovar': () => 'Aprovou e liberou a prova trimestral para impressão',
+  'PATCH /api/provas-trimestrais/:id/solicitar-alteracao': () => 'Solicitou alteração na prova trimestral',
+  'PATCH /api/provas-trimestrais/:id/marcar-impressa': () => 'Marcou prova trimestral como impressa',
   'POST /api/atendimentos': () => 'Registrou um atendimento',
   'PATCH /api/atendimentos/:id/enviar-para-assinatura': () => 'Enviou relatório de atendimento pra assinatura',
   'PATCH /api/atendimentos/:id/assinar': () => 'Assinou o relatório de atendimento',
@@ -1884,6 +1899,147 @@ app.post('/api/atividades-avaliativas/marcar-vistas', async (req, res) => {
   await db.write()
   res.json({ ok: true })
 })
+
+// ---------- Provas trimestrais (calendário de provas + aprovação + impressão) ----------
+app.get('/api/provas-trimestrais', (req, res) => {
+  if (req.sessao?.role === 'pai' || req.sessao?.role === 'aluno') {
+    return res.status(403).json({ erro: 'Esse acesso não tem permissão para essa ação.' })
+  }
+  const { data, turmaId, materiaId, professorId, estado } = req.query as {
+    data?: string; turmaId?: string; materiaId?: string; professorId?: string; estado?: string
+  }
+  let out = db.data.provasTrimestrais
+  if (data) out = out.filter((x) => x.data === data)
+  if (turmaId) out = out.filter((x) => x.turmaId === turmaId)
+  if (materiaId) out = out.filter((x) => x.materiaId === materiaId)
+  if (professorId) out = out.filter((x) => x.professorId === professorId)
+  if (estado) out = out.filter((x) => x.estado === estado)
+  res.json([...out].sort((a, b) => a.data.localeCompare(b.data)))
+})
+
+app.post('/api/provas-trimestrais', async (req, res) => {
+  const item: ProvaTrimestral = {
+    id: id(),
+    criadoEm: now(),
+    professorId: null,
+    professorNome: null,
+    arquivoNome: null,
+    arquivoTipo: null,
+    arquivoDataUrl: null,
+    estado: 'aguardando_envio',
+    comentarioCoordenacao: null,
+    avaliadoPor: null,
+    avaliadoEm: null,
+    provaImpressaEm: null,
+    provaImpressaPor: null,
+    ...req.body,
+  }
+  db.data.provasTrimestrais.push(item)
+  await db.write()
+  res.status(201).json(item)
+})
+
+app.patch('/api/provas-trimestrais/:id/anexar', async (req, res) => {
+  const item = db.data.provasTrimestrais.find((x) => x.id === req.params.id)
+  if (!item) return send404(res)
+  const { arquivoNome, arquivoTipo, arquivoDataUrl, professorId, professorNome } = req.body as {
+    arquivoNome: string; arquivoTipo: string; arquivoDataUrl: string; professorId: string; professorNome: string
+  }
+  item.arquivoNome = arquivoNome
+  item.arquivoTipo = arquivoTipo
+  item.arquivoDataUrl = arquivoDataUrl
+  item.professorId = professorId
+  item.professorNome = professorNome
+  item.estado = 'aguardando_aprovacao'
+  item.comentarioCoordenacao = null
+  await db.write()
+  res.json(item)
+  const turma = db.data.turmas.find((t) => t.id === item.turmaId)
+  const materia = db.data.materias.find((m) => m.id === item.materiaId)
+  await enviarPushParaPapel('coordenacao', {
+    titulo: 'Prova trimestral pra aprovar',
+    corpo: `${materia?.nome ?? 'Prova'} — ${turma?.nome ?? ''} — ${professorNome}`,
+    url: '/coordenacao/turma?sub=provas',
+  })
+})
+
+app.patch('/api/provas-trimestrais/:id/aprovar', async (req, res) => {
+  const item = db.data.provasTrimestrais.find((x) => x.id === req.params.id)
+  if (!item) return send404(res)
+  const { avaliadoPor } = req.body as { avaliadoPor?: string }
+  item.estado = 'liberada_impressao'
+  item.avaliadoPor = avaliadoPor ?? null
+  item.avaliadoEm = now()
+  await db.write()
+  res.json(item)
+  const turma = db.data.turmas.find((t) => t.id === item.turmaId)
+  const materia = db.data.materias.find((m) => m.id === item.materiaId)
+  await enviarPushParaPapel('recepcao', {
+    titulo: 'Prova trimestral liberada para impressão',
+    corpo: `${materia?.nome ?? 'Prova'} — ${turma?.nome ?? ''}`,
+    url: '/recepcao/provas-trimestrais',
+  })
+})
+
+app.patch('/api/provas-trimestrais/:id/solicitar-alteracao', async (req, res) => {
+  const item = db.data.provasTrimestrais.find((x) => x.id === req.params.id)
+  if (!item) return send404(res)
+  const { comentario, avaliadoPor } = req.body as { comentario: string; avaliadoPor?: string }
+  item.estado = 'alteracao_necessaria'
+  item.comentarioCoordenacao = comentario
+  item.avaliadoPor = avaliadoPor ?? null
+  item.avaliadoEm = now()
+  await db.write()
+  res.json(item)
+  if (item.professorId) {
+    const turma = db.data.turmas.find((t) => t.id === item.turmaId)
+    const materia = db.data.materias.find((m) => m.id === item.materiaId)
+    await enviarPushPara('professor', item.professorId, {
+      titulo: 'Prova trimestral precisa de ajuste',
+      corpo: `${materia?.nome ?? 'Prova'} — ${turma?.nome ?? ''}: ${comentario}`,
+      url: '/professor/provas-trimestrais',
+    })
+  }
+})
+
+app.patch('/api/provas-trimestrais/:id/marcar-impressa', async (req, res) => {
+  const item = db.data.provasTrimestrais.find((x) => x.id === req.params.id)
+  if (!item) return send404(res)
+  const { impressoPor } = req.body as { impressoPor?: string }
+  item.estado = 'impressa'
+  item.provaImpressaEm = now()
+  item.provaImpressaPor = impressoPor ?? null
+  await db.write()
+  res.json(item)
+})
+
+app.delete('/api/provas-trimestrais/:id', async (req, res) => {
+  const antes = db.data.provasTrimestrais.length
+  db.data.provasTrimestrais = db.data.provasTrimestrais.filter((x) => x.id !== req.params.id)
+  if (db.data.provasTrimestrais.length === antes) return send404(res)
+  await db.write()
+  res.status(204).end()
+})
+
+// Limpeza automática dos arquivos de prova trimestral — 1 mês depois de impressa,
+// o anexo é apagado pra não pesar o banco, mas o registro continua pro histórico.
+const TRINTA_DIAS_MS = 30 * 24 * 60 * 60 * 1000
+async function limparProvasTrimestraisAntigas() {
+  const agora = Date.now()
+  let changed = false
+  for (const p of db.data.provasTrimestrais) {
+    if (!p.provaImpressaEm || !p.arquivoDataUrl) continue
+    if (agora - new Date(p.provaImpressaEm).getTime() > TRINTA_DIAS_MS) {
+      p.arquivoNome = null
+      p.arquivoTipo = null
+      p.arquivoDataUrl = null
+      changed = true
+    }
+  }
+  if (changed) await db.write()
+}
+limparProvasTrimestraisAntigas()
+setInterval(limparProvasTrimestraisAntigas, 6 * 60 * 60 * 1000)
 
 // ---------- Atendimentos (conversa da coordenação com a família) ----------
 app.get('/api/atendimentos', (req, res) => {

@@ -44,6 +44,7 @@ const defaultData: DbSchema = {
   sessoesAtivas: [],
   visitas: [],
   atividadesAvaliativas: [],
+  provasTrimestrais: [],
   atendimentos: [],
   vapid: null,
   pushSubscricoes: [],

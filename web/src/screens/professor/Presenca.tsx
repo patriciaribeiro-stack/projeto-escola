@@ -46,6 +46,12 @@ export default function Presenca() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [materiaChave])
 
+  // Mostra todas as aulas de 1 até a maior já salva ou selecionada nessa sessão —
+  // sem isso, "+ Nova aula" recalculava só com base no que já tinha sido salvo e
+  // ficava travado em "aula 1" enquanto nada tivesse sido salvo ainda no dia.
+  const maiorAula = Math.max(aulasExistentes[aulasExistentes.length - 1] ?? 0, aulaSelecionada, 1)
+  const aulasParaMostrar = Array.from({ length: maiorAula }, (_, i) => i + 1)
+
   const [marcas, setMarcas] = useState<Record<string, boolean>>({})
   const [salvando, setSalvando] = useState(false)
   const [salvo, setSalvo] = useState(false)
@@ -102,7 +108,7 @@ export default function Presenca() {
         <div>
           <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-faint">Aula de hoje</p>
           <div className="flex flex-wrap gap-1.5">
-            {(aulasExistentes.length ? aulasExistentes : [1]).map((n) => (
+            {aulasParaMostrar.map((n) => (
               <button
                 key={n}
                 onClick={() => setAulaSelecionada(n)}
@@ -114,7 +120,7 @@ export default function Presenca() {
               </button>
             ))}
             <button
-              onClick={() => setAulaSelecionada((aulasExistentes[aulasExistentes.length - 1] ?? 0) + 1)}
+              onClick={() => setAulaSelecionada(maiorAula + 1)}
               className="rounded-full border-[1.5px] border-dashed border-line px-3.5 py-1.5 text-[12.5px] font-semibold text-blue"
             >
               + Nova aula

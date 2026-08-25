@@ -23,6 +23,8 @@ import Acompanhar from './screens/professor/Acompanhar'
 import Turma from './screens/professor/Turma'
 import AlunoDetalhe from './screens/professor/AlunoDetalhe'
 import SemanarioProfessor from './screens/professor/Semanario'
+import ProfessorProvasTrimestrais from './screens/professor/ProvasTrimestrais'
+import IntegralTurma from './screens/professor/IntegralTurma'
 
 import CoordLayout from './screens/coordenacao/CoordLayout'
 import Painel from './screens/coordenacao/Painel'
@@ -43,6 +45,7 @@ import RecepcaoVisitas from './screens/recepcao/Visitas'
 import RecepcaoCardapio from './screens/recepcao/Cardapio'
 import RecepcaoMedicacao from './screens/recepcao/Medicacao'
 import RecepcaoImpressao from './screens/recepcao/Impressao'
+import RecepcaoImpressaoProvasTrimestrais from './screens/recepcao/ImpressaoProvasTrimestrais'
 
 import IntegralLayout from './screens/integral/IntegralLayout'
 import IntegralAlmoco from './screens/integral/Almoco'
@@ -123,8 +126,10 @@ function Router() {
         <Route path="turma" element={<Turma />} />
         <Route path="turma/:alunoId" element={<AlunoDetalhe />} />
         <Route path="semanario" element={<SemanarioProfessor />} />
+        <Route path="provas-trimestrais" element={<ProfessorProvasTrimestrais />} />
         <Route path="integral" element={<IntegralAlmoco />} />
         <Route path="integral/licoes" element={<IntegralLicoes />} />
+        <Route path="integral-turma" element={<IntegralTurma />} />
       </Route>
 
       <Route
@@ -170,6 +175,7 @@ function Router() {
         <Route path="cardapio" element={<RecepcaoCardapio />} />
         <Route path="medicacao" element={<RecepcaoMedicacao />} />
         <Route path="impressao" element={<RecepcaoImpressao />} />
+        <Route path="provas-trimestrais" element={<RecepcaoImpressaoProvasTrimestrais />} />
       </Route>
 
       <Route

@@ -24,7 +24,7 @@ export default function Notificacoes() {
             ['saude', 'Saúde'],
             ['gerais', 'Ocorrências gerais'],
             ['matriculas', 'Matrículas'],
-            ['avaliativas', 'Provas'],
+            ['avaliativas', 'Atividade Avaliativa'],
             ['medicacao', 'Medicação'],
           ] as [Sub, string][]
         ).map(([key, label]) => (

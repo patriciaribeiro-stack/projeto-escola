@@ -160,6 +160,10 @@ export interface Professor {
   turmaIds: string[]
   vinculos: { turmaId: string; materiaId: string }[]
   atuaNoIntegral: boolean
+  // Turmas onde atua como cobertura do Integral (acesso restrito: rotina, fotos, lições —
+  // não presença/avisos/relatório/turma) — distinto de turmaIds, que dá acesso completo.
+  // Opcional: professores cadastrados antes desta fase não têm esse campo.
+  turmasIntegral?: string[]
   senhaHash: string
   bloqueadoEm: string | null
 }
@@ -598,6 +602,35 @@ export interface Atendimento {
   assinadoEm: string | null
 }
 
+export type ProvaTrimestralEstado =
+  | 'aguardando_envio'
+  | 'aguardando_aprovacao'
+  | 'alteracao_necessaria'
+  | 'liberada_impressao'
+  | 'impressa'
+
+export interface ProvaTrimestral {
+  id: string
+  turmaId: string
+  materiaId: string
+  data: string
+  anoLetivo: number
+  trimestre: 1 | 2 | 3
+  criadoPor: string
+  criadoEm: string
+  professorId: string | null
+  professorNome: string | null
+  arquivoNome: string | null
+  arquivoTipo: string | null
+  arquivoDataUrl: string | null
+  estado: ProvaTrimestralEstado
+  comentarioCoordenacao: string | null
+  avaliadoPor: string | null
+  avaliadoEm: string | null
+  provaImpressaEm: string | null
+  provaImpressaPor: string | null
+}
+
 export interface DbSchema {
   configuracao: ConfiguracaoMatricula
   diasNaoLetivos: DiaNaoLetivo[]
@@ -635,6 +668,7 @@ export interface DbSchema {
   sessoesAtivas: SessaoAtiva[]
   visitas: VisitaAgendada[]
   atividadesAvaliativas: AtividadeAvaliativa[]
+  provasTrimestrais: ProvaTrimestral[]
   atendimentos: Atendimento[]
   vapid: VapidConfig | null
   pushSubscricoes: PushSubscricao[]

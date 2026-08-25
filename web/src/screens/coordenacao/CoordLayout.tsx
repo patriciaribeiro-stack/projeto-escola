@@ -3,7 +3,7 @@ import { AppShell, type TabItem } from '../../components/AppShell'
 import { IconGrid, IconBook, IconBell, IconCalendar, IconPlus, IconFolder, IconMic } from '../../components/Icons'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
-import type { Aluno, AtividadeAvaliativa, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral } from '../../types'
+import type { Aluno, AtividadeAvaliativa, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral, ProvaTrimestral } from '../../types'
 import { AtivarPush } from '../../components/AtivarPush'
 
 const baseTabs: TabItem[] = [
@@ -15,6 +15,10 @@ const baseTabs: TabItem[] = [
   { to: '/coordenacao/eventos', label: 'Eventos', icon: IconCalendar },
   { to: '/coordenacao/atendimentos', label: 'Atendimentos', icon: IconMic },
 ]
+
+function hoje() {
+  return new Date().toISOString().slice(0, 10)
+}
 
 export default function CoordLayout() {
   const navigate = useNavigate()
@@ -40,9 +44,19 @@ export default function CoordLayout() {
   const avaliativasNaoVistas = atividadesAvaliativas?.filter((a) => !a.vistoPelaCoordenacaoEm).length ?? 0
   const { data: medicacoes } = usePolling<MedicacaoAgendada[]>(async () => api.get('/medicacoes'), 8000, [])
   const medicacoesNaoVistas = medicacoes?.filter((m) => !m.vistoPelaCoordenacaoEm).length ?? 0
+  const { data: provasTrimestraisHoje } = usePolling<ProvaTrimestral[]>(
+    async () => api.get(`/provas-trimestrais${qs({ data: hoje() })}`),
+    8000,
+    [],
+  )
+  const provasTrimestraisPendentes = provasTrimestraisHoje?.filter((p) => p.estado === 'aguardando_aprovacao').length ?? 0
   const totalBadge = pendentes + respondidas + aguardandoLiberacaoSaude + respondidasSaude + matriculasNovas + avaliativasNaoVistas + medicacoesNaoVistas
 
-  const tabs = baseTabs.map((t) => (t.to === '/coordenacao/notificacoes' && totalBadge ? { ...t, badge: totalBadge } : t))
+  const tabs = baseTabs.map((t) => {
+    if (t.to === '/coordenacao/notificacoes' && totalBadge) return { ...t, badge: totalBadge }
+    if (t.to === '/coordenacao/turma' && provasTrimestraisPendentes) return { ...t, badge: provasTrimestraisPendentes }
+    return t
+  })
 
   return (
     <AppShell

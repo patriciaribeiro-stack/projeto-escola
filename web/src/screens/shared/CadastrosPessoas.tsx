@@ -265,6 +265,27 @@ function SeletorTurmasEMaterias({
   )
 }
 
+function SeletorTurmasIntegral({ turmas, turmaIds, onToggle }: {
+  turmas?: Turma[] | null
+  turmaIds: string[]
+  onToggle: (turmaId: string) => void
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {turmas?.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => onToggle(t.id)}
+          className={`rounded-full border-[1.5px] px-3 py-1.5 text-[12px] font-semibold ${turmaIds.includes(t.id) ? 'border-amber bg-amber text-white' : 'border-line text-muted'}`}
+        >
+          {t.nome}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function SeletorResponsaveis({ pais, responsavelIds, onToggle }: {
   pais?: Pai[] | null
   responsavelIds: string[]
@@ -1419,6 +1440,7 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
   const [turmaIds, setTurmaIds] = useState<string[]>([])
   const [vinculos, setVinculos] = useState<Vinculo[]>([])
   const [atuaNoIntegral, setAtuaNoIntegral] = useState(false)
+  const [turmasIntegral, setTurmasIntegral] = useState<string[]>([])
   const [senha, setSenha] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [mostrarForm, setMostrarForm] = useState(false)
@@ -1428,8 +1450,16 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
   const [editTurmaIds, setEditTurmaIds] = useState<string[]>([])
   const [editVinculos, setEditVinculos] = useState<Vinculo[]>([])
   const [editAtuaNoIntegral, setEditAtuaNoIntegral] = useState(false)
+  const [editTurmasIntegral, setEditTurmasIntegral] = useState<string[]>([])
   const [salvandoEdicao, setSalvandoEdicao] = useState(false)
   const ultimoCliqueVinculoEdicao = useRef<Record<string, number>>({})
+
+  function alternarTurmaIntegral(turmaId: string) {
+    setTurmasIntegral((prev) => (prev.includes(turmaId) ? prev.filter((t) => t !== turmaId) : [...prev, turmaId]))
+  }
+  function alternarTurmaIntegralEdicao(turmaId: string) {
+    setEditTurmasIntegral((prev) => (prev.includes(turmaId) ? prev.filter((t) => t !== turmaId) : [...prev, turmaId]))
+  }
 
   const turmaNomes = (p: Professor) =>
     p.turmaIds
@@ -1451,13 +1481,14 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
   async function salvar() {
     setSalvando(true)
     try {
-      await api.post('/professores', { nome, telefone, turmaIds, vinculos, atuaNoIntegral, senha })
+      await api.post('/professores', { nome, telefone, turmaIds, vinculos, atuaNoIntegral, turmasIntegral, senha })
       setFilaImpressao((prev) => [...prev, { nome, telefone, texto: senha, rotulo: 'Senha' }])
       setNome('')
       setTelefone('')
       setTurmaIds([])
       setVinculos([])
       setAtuaNoIntegral(false)
+      setTurmasIntegral([])
       setSenha('')
       setMostrarForm(false)
       reload()
@@ -1471,6 +1502,7 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
     setEditTurmaIds([...p.turmaIds])
     setEditVinculos([...p.vinculos])
     setEditAtuaNoIntegral(p.atuaNoIntegral)
+    setEditTurmasIntegral([...(p.turmasIntegral ?? [])])
   }
 
   function cancelarEdicao() {
@@ -1481,7 +1513,12 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
     if (!editandoId) return
     setSalvandoEdicao(true)
     try {
-      await api.patch(`/professores/${editandoId}`, { turmaIds: editTurmaIds, vinculos: editVinculos, atuaNoIntegral: editAtuaNoIntegral })
+      await api.patch(`/professores/${editandoId}`, {
+        turmaIds: editTurmaIds,
+        vinculos: editVinculos,
+        atuaNoIntegral: editAtuaNoIntegral,
+        turmasIntegral: editTurmasIntegral,
+      })
       setEditandoId(null)
       reload()
     } finally {
@@ -1531,6 +1568,10 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
               <input type="checkbox" checked={atuaNoIntegral} onChange={(e) => setAtuaNoIntegral(e.target.checked)} />
               Também atua no Integral (Fund. I/II)
             </label>
+            <div>
+              <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-faint">Turmas onde cobre o Integral (acesso restrito: rotina, fotos e lições)</p>
+              <SeletorTurmasIntegral turmas={turmas} turmaIds={turmasIntegral} onToggle={alternarTurmaIntegral} />
+            </div>
             <div className="flex gap-2">
               <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Senha inicial" value={senha} onChange={(e) => setSenha(e.target.value)} />
               <button type="button" onClick={() => setSenha(gerarSenhaAleatoria())} className="whitespace-nowrap rounded-lg bg-paper-sunken px-3 text-[12px] font-bold text-ink">
@@ -1573,6 +1614,10 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
                     <input type="checkbox" checked={editAtuaNoIntegral} onChange={(e) => setEditAtuaNoIntegral(e.target.checked)} />
                     Também atua no Integral (Fund. I/II)
                   </label>
+                  <div>
+                    <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-faint">Turmas onde cobre o Integral (acesso restrito: rotina, fotos e lições)</p>
+                    <SeletorTurmasIntegral turmas={turmas} turmaIds={editTurmasIntegral} onToggle={alternarTurmaIntegralEdicao} />
+                  </div>
                   <div className="mt-1 flex gap-3">
                     <Button disabled={!editTurmaIds.length || salvandoEdicao} onClick={salvarEdicao}>
                       {salvandoEdicao ? 'Salvando...' : 'Salvar alterações'}
@@ -1585,9 +1630,15 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
                   <div className="flex items-center gap-2">
                     <span className="text-[13px] font-bold">{p.nome}</span>
                     {p.atuaNoIntegral && <Pill tone="blue">Integral</Pill>}
+                    {!!p.turmasIntegral?.length && <Pill tone="amber">Cobertura Integral</Pill>}
                     {p.bloqueadoEm && <Pill tone="red">Bloqueado</Pill>}
                   </div>
                   <p className="mt-1 text-[11.5px] text-muted">{p.telefone} · Turmas: {turmaNomes(p) || '—'}</p>
+                  {!!p.turmasIntegral?.length && (
+                    <p className="mt-0.5 text-[11.5px] text-muted">
+                      Cobertura Integral: {p.turmasIntegral.map((tid) => turmas?.find((t) => t.id === tid)?.nome).filter(Boolean).join(', ')}
+                    </p>
+                  )}
                   <div className="mt-2 flex flex-wrap gap-3">
                     <button onClick={() => editar(p)} className="text-[11.5px] font-bold text-blue">Editar</button>
                     <button onClick={() => redefinirSenha(p)} className="text-[11.5px] font-bold text-blue">Redefinir senha</button>

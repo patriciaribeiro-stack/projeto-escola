@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useSession } from '../../session'
 import { usePolling } from '../../usePolling'
 import { api } from '../../api'
@@ -9,11 +10,14 @@ import { LicoesLista } from '../shared/LicoesLista'
 import Relatorios from './Relatorios'
 import LivroDidatico from './LivroDidatico'
 import Semanarios from './Semanarios'
+import ProvasTrimestrais from './ProvasTrimestrais'
 
-type Sub = 'alunos' | 'licoes' | 'relatorios' | 'estatisticas' | 'livro' | 'semanario'
+type Sub = 'alunos' | 'licoes' | 'relatorios' | 'estatisticas' | 'livro' | 'semanario' | 'provas'
 
 export default function Turma() {
-  const [sub, setSub] = useState<Sub>('alunos')
+  const [params] = useSearchParams()
+  const subInicial = (params.get('sub') as Sub) || 'alunos'
+  const [sub, setSub] = useState<Sub>(subInicial)
 
   return (
     <div className="flex flex-col gap-4">
@@ -26,6 +30,7 @@ export default function Turma() {
             ['estatisticas', 'Relatórios'],
             ['livro', 'Livro didático'],
             ['semanario', 'Semanário'],
+            ['provas', 'Provas Trimestrais'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
           <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg px-2 py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
@@ -40,6 +45,7 @@ export default function Turma() {
       {sub === 'estatisticas' && <Relatorios />}
       {sub === 'livro' && <LivroDidatico />}
       {sub === 'semanario' && <Semanarios />}
+      {sub === 'provas' && <ProvasTrimestrais />}
     </div>
   )
 }
