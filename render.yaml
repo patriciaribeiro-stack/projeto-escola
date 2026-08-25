@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: projeto-escola
+    runtime: node
+    plan: free
+    buildCommand: cd web && npm install && npm run build && cd ../server && npm install && npm run seed
+    startCommand: cd server && npm start
