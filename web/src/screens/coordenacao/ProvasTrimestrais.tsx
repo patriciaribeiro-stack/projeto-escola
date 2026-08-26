@@ -31,7 +31,7 @@ export default function ProvasTrimestrais() {
             ['calendario', 'Calendário'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
             {label}
           </button>
         ))}

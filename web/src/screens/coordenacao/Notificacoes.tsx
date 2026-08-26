@@ -10,7 +10,7 @@ import { FichaMedicaView } from '../shared/FichaMedica'
 import { inputCls } from '../shared/formHelpers'
 import { MedicacaoCard } from '../shared/Medicacoes'
 
-type Sub = 'saude' | 'gerais' | 'avaliativas' | 'medicacao'
+type Sub = 'saude' | 'gerais' | 'medicacao'
 
 export default function Notificacoes() {
   const [params] = useSearchParams()
@@ -23,18 +23,16 @@ export default function Notificacoes() {
           [
             ['saude', 'Saúde'],
             ['gerais', 'Ocorrências gerais'],
-            ['avaliativas', 'Atividade Avaliativa'],
             ['medicacao', 'Medicação'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
             {label}
           </button>
         ))}
       </div>
       {sub === 'saude' && <SaudeCoord />}
       {sub === 'gerais' && <GeraisCoord />}
-      {sub === 'avaliativas' && <AvaliativasCoord />}
       {sub === 'medicacao' && <MedicacaoCoord />}
     </div>
   )
@@ -82,7 +80,7 @@ function ProvaBlock({ atividade, onReload }: { atividade: AtividadeAvaliativa; o
   )
 }
 
-function AvaliativasCoord() {
+export function AvaliativasCoord() {
   const { data: atividades, reload } = usePolling<AtividadeAvaliativa[]>(async () => api.get('/atividades-avaliativas'), 8000, [])
   const { data: turmas } = usePolling<Turma[]>(async () => api.get('/turmas'), 60000, [])
   const { data: materias } = usePolling<Materia[]>(async () => api.get('/materias'), 60000, [])

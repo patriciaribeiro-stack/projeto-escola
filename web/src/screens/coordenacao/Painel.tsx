@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
 import type { AchadoPerdido, Aluno, Atestado, SaidaAntecipada, Substituto, Turma } from '../../types'
@@ -7,6 +8,8 @@ import { IconChevron } from '../../components/Icons'
 import { inputCls } from '../shared/formHelpers'
 import Feeds from './Feeds'
 import Atividades from './Atividades'
+import { AvaliativasCoord } from './Notificacoes'
+import ProvasTrimestrais from './ProvasTrimestrais'
 
 function hoje() {
   return new Date().toISOString().slice(0, 10)
@@ -42,10 +45,12 @@ function CaixaPainel({ titulo, count, aberta, carregado, children }: {
   )
 }
 
-type Sub = 'visao' | 'atividades' | 'feeds'
+type Sub = 'visao' | 'atividades' | 'feeds' | 'avaliacoes'
 
 export default function Painel() {
-  const [sub, setSub] = useState<Sub>('visao')
+  const [params] = useSearchParams()
+  const subInicial = (params.get('sub') as Sub) || 'visao'
+  const [sub, setSub] = useState<Sub>(subInicial)
 
   return (
     <div className="flex flex-col gap-4">
@@ -55,9 +60,10 @@ export default function Painel() {
             ['visao', 'Visão geral'],
             ['atividades', 'Atividades'],
             ['feeds', 'Feed'],
+            ['avaliacoes', 'Avaliações'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
             {label}
           </button>
         ))}
@@ -65,6 +71,31 @@ export default function Painel() {
       {sub === 'visao' && <VisaoGeral />}
       {sub === 'atividades' && <Atividades />}
       {sub === 'feeds' && <Feeds />}
+      {sub === 'avaliacoes' && <Avaliacoes />}
+    </div>
+  )
+}
+
+type SubAvaliacoes = 'provas' | 'avaliativas'
+
+function Avaliacoes() {
+  const [sub, setSub] = useState<SubAvaliacoes>('provas')
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-1.5 rounded-xl bg-paper-sunken p-1">
+        {(
+          [
+            ['provas', 'Provas Trimestrais'],
+            ['avaliativas', 'Atividade Avaliativa'],
+          ] as [SubAvaliacoes, string][]
+        ).map(([key, label]) => (
+          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {sub === 'provas' && <ProvasTrimestrais />}
+      {sub === 'avaliativas' && <AvaliativasCoord />}
     </div>
   )
 }

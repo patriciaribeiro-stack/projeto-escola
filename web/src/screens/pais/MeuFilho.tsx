@@ -65,7 +65,7 @@ export default function MeuFilho() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex-1 whitespace-nowrap rounded-lg px-2 py-2 text-[12.5px] font-bold transition-colors ${
+            className={`flex-1 whitespace-nowrap rounded-lg border border-line px-2 py-2 text-[12.5px] font-bold transition-colors ${
               tab === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'
             } ${(key === 'saude' && precisaRespostaSaude) || (key === 'ocorrencias' && geralPendente) ? 'text-red' : ''}`}
           >

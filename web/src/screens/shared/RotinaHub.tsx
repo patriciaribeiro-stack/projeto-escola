@@ -40,7 +40,7 @@ export function RotinaHub({ turmaId, alunos }: { turmaId: string; alunos: Aluno[
             ['higiene', 'Higiene'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line px-2.5 py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
             {label}
           </button>
         ))}

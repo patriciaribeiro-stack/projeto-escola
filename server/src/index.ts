@@ -1861,7 +1861,7 @@ app.post('/api/atividades-avaliativas', async (req, res) => {
   db.data.atividadesAvaliativas.push(item)
   await db.write()
   res.status(201).json(item)
-  await enviarPushParaPapel('coordenacao', { titulo: 'Atividade avaliativa agendada', corpo: item.conteudo, url: '/coordenacao/notificacoes?sub=avaliativas' })
+  await enviarPushParaPapel('coordenacao', { titulo: 'Atividade avaliativa agendada', corpo: item.conteudo, url: '/coordenacao?sub=avaliacoes' })
 })
 
 app.patch('/api/atividades-avaliativas/:id/liberar-impressao', async (req, res) => {
@@ -1970,7 +1970,7 @@ app.patch('/api/provas-trimestrais/:id/anexar', async (req, res) => {
   await enviarPushParaPapel('coordenacao', {
     titulo: 'Prova trimestral pra aprovar',
     corpo: `${materia?.nome ?? 'Prova'} — ${turma?.nome ?? ''} — ${professorNome}`,
-    url: '/coordenacao/turma?sub=provas',
+    url: '/coordenacao?sub=avaliacoes',
   })
 })
 

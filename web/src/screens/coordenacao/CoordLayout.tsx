@@ -47,11 +47,12 @@ export default function CoordLayout() {
     [],
   )
   const provasTrimestraisPendentes = provasTrimestraisHoje?.filter((p) => p.estado === 'aguardando_aprovacao').length ?? 0
-  const totalBadge = pendentes + respondidas + aguardandoLiberacaoSaude + respondidasSaude + avaliativasNaoVistas + medicacoesNaoVistas
+  const totalBadge = pendentes + respondidas + aguardandoLiberacaoSaude + respondidasSaude + medicacoesNaoVistas
+  const painelBadge = provasTrimestraisPendentes + avaliativasNaoVistas
 
   const tabs = baseTabs.map((t) => {
     if (t.to === '/coordenacao/notificacoes' && totalBadge) return { ...t, badge: totalBadge }
-    if (t.to === '/coordenacao/turma' && provasTrimestraisPendentes) return { ...t, badge: provasTrimestraisPendentes }
+    if (t.to === '/coordenacao' && painelBadge) return { ...t, badge: painelBadge }
     return t
   })
 
@@ -118,7 +119,7 @@ export default function CoordLayout() {
             )}
             {!!avaliativasNaoVistas && (
               <button
-                onClick={() => navigate('/coordenacao/notificacoes?sub=avaliativas')}
+                onClick={() => navigate('/coordenacao?sub=avaliacoes')}
                 className="flex items-start gap-2 rounded-xl bg-amber-light px-3 py-2.5 text-left text-[13px] font-semibold text-amber"
               >
                 <IconBell className="mt-0.5 h-4 w-4 flex-shrink-0" />

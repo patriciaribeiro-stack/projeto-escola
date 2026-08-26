@@ -26,7 +26,7 @@ export default function Escola() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex-1 whitespace-nowrap rounded-lg py-2 px-2 text-[12.5px] font-bold transition-colors ${
+            className={`flex-1 whitespace-nowrap rounded-lg border border-line py-2 px-2 text-[12.5px] font-bold transition-colors ${
               tab === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'
             }`}
           >
