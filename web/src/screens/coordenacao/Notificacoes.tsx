@@ -22,7 +22,7 @@ export default function Notificacoes() {
         {(
           [
             ['saude', 'Saúde'],
-            ['gerais', 'Ocorrências gerais'],
+            ['gerais', 'Ocorrência'],
             ['medicacao', 'Medicação'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
