@@ -44,6 +44,7 @@ import RecepcaoCardapio from './screens/recepcao/Cardapio'
 import RecepcaoMedicacao from './screens/recepcao/Medicacao'
 import RecepcaoImpressao from './screens/recepcao/Impressao'
 import RecepcaoImpressaoProvasTrimestrais from './screens/recepcao/ImpressaoProvasTrimestrais'
+import RecepcaoLivroDidatico from './screens/recepcao/LivroDidatico'
 
 import IntegralLayout from './screens/integral/IntegralLayout'
 import IntegralAlmoco from './screens/integral/Almoco'
@@ -172,6 +173,7 @@ function Router() {
         <Route path="medicacao" element={<RecepcaoMedicacao />} />
         <Route path="impressao" element={<RecepcaoImpressao />} />
         <Route path="provas-trimestrais" element={<RecepcaoImpressaoProvasTrimestrais />} />
+        <Route path="livro-didatico" element={<RecepcaoLivroDidatico />} />
       </Route>
 
       <Route

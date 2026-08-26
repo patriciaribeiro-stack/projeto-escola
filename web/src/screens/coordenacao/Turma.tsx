@@ -8,10 +8,9 @@ import { Card, EmptyState, Pill, timeAgo } from '../../components/ui'
 import { inputCls } from '../shared/formHelpers'
 import { LicoesLista } from '../shared/LicoesLista'
 import Relatorios from './Relatorios'
-import LivroDidatico from './LivroDidatico'
 import Semanarios from './Semanarios'
 
-type Sub = 'alunos' | 'licoes' | 'relatorios' | 'estatisticas' | 'livro' | 'semanario'
+type Sub = 'alunos' | 'licoes' | 'relatorios' | 'estatisticas' | 'semanario'
 
 export default function Turma() {
   const [params] = useSearchParams()
@@ -27,7 +26,6 @@ export default function Turma() {
             ['licoes', 'Lições'],
             ['relatorios', 'Diário'],
             ['estatisticas', 'Relatórios'],
-            ['livro', 'Livro didático'],
             ['semanario', 'Semanário'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
@@ -41,7 +39,6 @@ export default function Turma() {
       {sub === 'licoes' && <Licoes />}
       {sub === 'relatorios' && <RelatoriosTexto />}
       {sub === 'estatisticas' && <Relatorios />}
-      {sub === 'livro' && <LivroDidatico />}
       {sub === 'semanario' && <Semanarios />}
     </div>
   )

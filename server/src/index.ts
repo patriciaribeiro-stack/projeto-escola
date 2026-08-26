@@ -158,8 +158,8 @@ const PERMISSOES: Record<string, RegraPermissao> = {
   'DELETE /api/materias/:id': ['secretaria'],
   'POST /api/dias-nao-letivos': ['secretaria'],
   'DELETE /api/dias-nao-letivos/:id': ['secretaria'],
-  'POST /api/unidades-livro': ['coordenacao'],
-  'DELETE /api/unidades-livro/:id': ['coordenacao'],
+  'POST /api/unidades-livro': ['recepcao'],
+  'DELETE /api/unidades-livro/:id': ['recepcao'],
   'POST /api/conteudos-dia': ['professor', 'substituto', 'coordenacao'],
   'DELETE /api/conteudos-dia/:id': ['professor', 'substituto', 'coordenacao'],
 
