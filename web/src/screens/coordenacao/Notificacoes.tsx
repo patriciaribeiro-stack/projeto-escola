@@ -10,7 +10,7 @@ import { FichaMedicaView } from '../shared/FichaMedica'
 import { inputCls } from '../shared/formHelpers'
 import { MedicacaoCard } from '../shared/Medicacoes'
 
-type Sub = 'saude' | 'gerais' | 'matriculas' | 'avaliativas' | 'medicacao'
+type Sub = 'saude' | 'gerais' | 'avaliativas' | 'medicacao'
 
 export default function Notificacoes() {
   const [params] = useSearchParams()
@@ -23,7 +23,6 @@ export default function Notificacoes() {
           [
             ['saude', 'Saúde'],
             ['gerais', 'Ocorrências gerais'],
-            ['matriculas', 'Matrículas'],
             ['avaliativas', 'Atividade Avaliativa'],
             ['medicacao', 'Medicação'],
           ] as [Sub, string][]
@@ -35,7 +34,6 @@ export default function Notificacoes() {
       </div>
       {sub === 'saude' && <SaudeCoord />}
       {sub === 'gerais' && <GeraisCoord />}
-      {sub === 'matriculas' && <MatriculasCoord />}
       {sub === 'avaliativas' && <AvaliativasCoord />}
       {sub === 'medicacao' && <MedicacaoCoord />}
     </div>
@@ -199,36 +197,6 @@ function MedicacaoCoord() {
           ))}
         </div>
       )}
-    </div>
-  )
-}
-
-function MatriculasCoord() {
-  const { data: alunos } = usePolling<Aluno[]>(async () => api.get('/alunos'), 10000, [])
-  const { data: turmas } = usePolling<Turma[]>(async () => api.get('/turmas'), 60000, [])
-  const turmaNome = (id: string) => turmas?.find((t) => t.id === id)?.nome ?? '...'
-
-  const ordenados = [...(alunos ?? [])].sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
-
-  useEffect(() => {
-    const naoVistos = (alunos ?? []).filter((a) => !a.vistoPelaCoordenacaoEm)
-    if (!naoVistos.length) return
-    api.post('/alunos/marcar-vistos', { ids: naoVistos.map((a) => a.id) })
-  }, [alunos])
-
-  if (!ordenados.length) return <EmptyState>Nenhum aluno matriculado ainda.</EmptyState>
-
-  return (
-    <div className="flex flex-col gap-2">
-      {ordenados.map((a) => (
-        <Card key={a.id}>
-          <div className="flex items-center justify-between">
-            <span className="text-[13px] font-bold">{a.nome}</span>
-            {!a.vistoPelaCoordenacaoEm && <Pill tone="green" dot>Novo</Pill>}
-          </div>
-          <p className="mt-1 text-[12px] text-muted">Turma {turmaNome(a.turmaId)} · matriculado {timeAgo(a.criadoEm)}</p>
-        </Card>
-      ))}
     </div>
   )
 }

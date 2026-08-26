@@ -546,6 +546,7 @@ export interface Atestado {
   arquivoNome: string | null
   arquivoTipo: string | null
   arquivoDataUrl: string | null
+  vistoPelaCoordenacaoEm: string | null
 }
 
 export interface SaidaAntecipada {

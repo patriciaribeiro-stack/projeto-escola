@@ -258,6 +258,7 @@ const PERMISSOES: Record<string, RegraPermissao> = {
   'POST /api/saidas-antecipadas': ['pai'],
   'DELETE /api/saidas-antecipadas/:id': ['pai'],
   'POST /api/atestados': ['pai'],
+  'POST /api/atestados/marcar-vistos': ['coordenacao'],
 
   // Visitas agendadas pelo site público — recepção administra
   'PATCH /api/visitas/:id': ['recepcao'],
@@ -411,6 +412,7 @@ const RESUMOS_ESPECIFICOS: Record<string, (req: express.Request) => string> = {
   'PATCH /api/alunos/:id/acesso': () => 'Alterou o login do aluno',
   'PATCH /api/alunos/:id/responsaveis': () => 'Alterou os responsáveis do aluno',
   'POST /api/alunos/marcar-vistos': () => 'Marcou matrículas como vistas',
+  'POST /api/atestados/marcar-vistos': () => 'Marcou atestados como vistos',
   'PATCH /api/pais/:id/consentimento': () => 'Registrou consentimento do responsável',
   'PATCH /api/semanarios/:id/enviar': () => 'Enviou o semanário para aprovação',
   'PATCH /api/semanarios/:id/aprovar': () => 'Aprovou o semanário',
@@ -577,7 +579,7 @@ app.patch('/api/configuracao', async (req, res) => {
 })
 
 // ---------- Turmas ----------
-app.get('/api/turmas', (_req, res) => res.json(db.data.turmas))
+app.get('/api/turmas', (_req, res) => res.json([...db.data.turmas].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))))
 
 app.post('/api/turmas', async (req, res) => {
   const item = { id: id(), ...req.body }
@@ -601,7 +603,7 @@ app.delete('/api/turmas/:id', async (req, res) => {
 })
 
 // ---------- Matérias ----------
-app.get('/api/materias', (_req, res) => res.json(db.data.materias))
+app.get('/api/materias', (_req, res) => res.json([...db.data.materias].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))))
 
 app.post('/api/materias', async (req, res) => {
   const item = { id: id(), ...req.body }
@@ -764,7 +766,7 @@ app.delete('/api/alunos/:id', async (req, res) => {
 })
 
 // ---------- Pais ----------
-app.get('/api/pais', (_req, res) => res.json(db.data.pais.map(semSenha)))
+app.get('/api/pais', (_req, res) => res.json([...db.data.pais].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(semSenha)))
 
 app.get('/api/pais/:id', (req, res) => {
   const p = db.data.pais.find((x) => x.id === req.params.id)
@@ -813,7 +815,7 @@ app.patch('/api/pais/:id/consentimento', async (req, res) => {
 })
 
 // ---------- Professores ----------
-app.get('/api/professores', (_req, res) => res.json(db.data.professores.map(semSenha)))
+app.get('/api/professores', (_req, res) => res.json([...db.data.professores].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(semSenha)))
 
 app.get('/api/professores/:id', (req, res) => {
   const p = db.data.professores.find((x) => x.id === req.params.id)
@@ -1725,14 +1727,23 @@ app.get('/api/atestados', (req, res) => {
 })
 
 app.post('/api/atestados', async (req, res) => {
-  const item = { id: id(), criadoEm: now(), arquivoNome: null, arquivoTipo: null, arquivoDataUrl: null, ...req.body }
+  const item = { id: id(), criadoEm: now(), arquivoNome: null, arquivoTipo: null, arquivoDataUrl: null, vistoPelaCoordenacaoEm: null, ...req.body }
   db.data.atestados.unshift(item)
   const aluno = db.data.alunos.find((a) => a.id === item.alunoId)
   logEdit('atestado', item.id, `Atestado de ${aluno?.nome ?? 'aluno'} notificado à coordenação e aos professores`, 'Sistema')
   await db.write()
   res.status(201).json(item)
-  await enviarPushParaPapel('coordenacao', { titulo: 'Atestado médico enviado', corpo: `${aluno?.nome ?? 'Um aluno'} enviou um atestado.`, url: '/coordenacao/registros' })
+  await enviarPushParaPapel('coordenacao', { titulo: 'Atestado médico enviado', corpo: `${aluno?.nome ?? 'Um aluno'} enviou um atestado.`, url: '/coordenacao' })
   if (aluno) await enviarPushParaProfessoresDaTurma(aluno.turmaId, { titulo: 'Atestado médico enviado', corpo: `${aluno.nome} enviou um atestado.`, url: '/professor/turma' })
+})
+
+app.post('/api/atestados/marcar-vistos', async (req, res) => {
+  const { ids } = req.body as { ids: string[] }
+  for (const item of db.data.atestados) {
+    if (ids.includes(item.id)) item.vistoPelaCoordenacaoEm = now()
+  }
+  await db.write()
+  res.json({ ok: true })
 })
 
 // ---------- Saída antecipada ----------

@@ -55,10 +55,23 @@ function AlunosPorTurma() {
   const { data: alunos } = usePolling<Aluno[]>(async () => api.get('/alunos'), 15000, [])
   const [turmaAbertaId, setTurmaAbertaId] = useState<string | null>(null)
 
-  if (!turmas?.length) return <EmptyState>Nenhuma turma cadastrada.</EmptyState>
-
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <div className="text-[22px] font-bold font-mono">{turmas?.length ?? 0}</div>
+          <div className="text-[11.5px] text-muted">Turmas ativas</div>
+        </Card>
+        <Card>
+          <div className="text-[22px] font-bold font-mono">{alunos?.length ?? 0}</div>
+          <div className="text-[11.5px] text-muted">Alunos matriculados</div>
+        </Card>
+      </div>
+
+      {!turmas?.length ? (
+        <EmptyState>Nenhuma turma cadastrada.</EmptyState>
+      ) : (
+      <div className="flex flex-col gap-2">
       {turmas.map((t) => {
         const alunosDaTurma = (alunos ?? [])
           .filter((a) => a.turmaId === t.id)
@@ -95,6 +108,8 @@ function AlunosPorTurma() {
           </Card>
         )
       })}
+      </div>
+      )}
     </div>
   )
 }

@@ -1,9 +1,9 @@
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppShell, type TabItem } from '../../components/AppShell'
-import { IconGrid, IconBook, IconBell, IconCalendar, IconPlus, IconFolder, IconMic } from '../../components/Icons'
+import { IconGrid, IconBook, IconBell, IconCalendar, IconPlus, IconMic } from '../../components/Icons'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
-import type { Aluno, AtividadeAvaliativa, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral, ProvaTrimestral } from '../../types'
+import type { AtividadeAvaliativa, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral, ProvaTrimestral } from '../../types'
 import { AtivarPush } from '../../components/AtivarPush'
 
 const baseTabs: TabItem[] = [
@@ -11,7 +11,6 @@ const baseTabs: TabItem[] = [
   { to: '/coordenacao/postar', label: 'Publicar', icon: IconPlus },
   { to: '/coordenacao/turma', label: 'Turma', icon: IconBook },
   { to: '/coordenacao/notificacoes', label: 'Notificações', icon: IconBell },
-  { to: '/coordenacao/registros', label: 'Registros', icon: IconFolder },
   { to: '/coordenacao/eventos', label: 'Eventos', icon: IconCalendar },
   { to: '/coordenacao/atendimentos', label: 'Atendimentos', icon: IconMic },
 ]
@@ -27,7 +26,6 @@ export default function CoordLayout() {
     6000,
     [],
   )
-  const { data: alunos } = usePolling<Aluno[]>(async () => api.get('/alunos'), 10000, [])
   const { data: ocorrenciasSaude } = usePolling<Ocorrencia[]>(
     async () => api.get(`/ocorrencias${qs({ ativas: 'true' })}`),
     6000,
@@ -39,7 +37,6 @@ export default function CoordLayout() {
   const respondidasSaude = ocorrenciasSaude?.filter((o) =>
     (o.estado === 'ciente' || o.estado === 'medicacao_autorizada' || o.estado === 'indo_buscar') && !o.vistoPelaCoordenacaoEm,
   ).length ?? 0
-  const matriculasNovas = alunos?.filter((a) => !a.vistoPelaCoordenacaoEm).length ?? 0
   const { data: atividadesAvaliativas } = usePolling<AtividadeAvaliativa[]>(async () => api.get('/atividades-avaliativas'), 8000, [])
   const avaliativasNaoVistas = atividadesAvaliativas?.filter((a) => !a.vistoPelaCoordenacaoEm).length ?? 0
   const { data: medicacoes } = usePolling<MedicacaoAgendada[]>(async () => api.get('/medicacoes'), 8000, [])
@@ -50,7 +47,7 @@ export default function CoordLayout() {
     [],
   )
   const provasTrimestraisPendentes = provasTrimestraisHoje?.filter((p) => p.estado === 'aguardando_aprovacao').length ?? 0
-  const totalBadge = pendentes + respondidas + aguardandoLiberacaoSaude + respondidasSaude + matriculasNovas + avaliativasNaoVistas + medicacoesNaoVistas
+  const totalBadge = pendentes + respondidas + aguardandoLiberacaoSaude + respondidasSaude + avaliativasNaoVistas + medicacoesNaoVistas
 
   const tabs = baseTabs.map((t) => {
     if (t.to === '/coordenacao/notificacoes' && totalBadge) return { ...t, badge: totalBadge }
@@ -67,7 +64,7 @@ export default function CoordLayout() {
           <div className="mx-4 mt-3">
             <AtivarPush />
           </div>
-          {(!!pendentes || !!respondidas || !!aguardandoLiberacaoSaude || !!respondidasSaude || !!matriculasNovas || !!avaliativasNaoVistas || !!medicacoesNaoVistas) && (
+          {(!!pendentes || !!respondidas || !!aguardandoLiberacaoSaude || !!respondidasSaude || !!avaliativasNaoVistas || !!medicacoesNaoVistas) && (
           <div className="mx-4 mt-3 flex flex-col gap-2">
             {!!aguardandoLiberacaoSaude && (
               <button
@@ -116,17 +113,6 @@ export default function CoordLayout() {
                   {respondidas === 1
                     ? 'Um responsável confirmou ciência em uma ocorrência.'
                     : `${respondidas} responsáveis confirmaram ciência em ocorrências.`} Toque para ver.
-                </span>
-              </button>
-            )}
-            {!!matriculasNovas && (
-              <button
-                onClick={() => navigate('/coordenacao/notificacoes?sub=matriculas')}
-                className="flex items-start gap-2 rounded-xl bg-green-light px-3 py-2.5 text-left text-[13px] font-semibold text-green-dark"
-              >
-                <IconBell className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                <span>
-                  {matriculasNovas === 1 ? 'Há 1 aluno novo matriculado.' : `Há ${matriculasNovas} alunos novos matriculados.`} Toque para ver.
                 </span>
               </button>
             )}
