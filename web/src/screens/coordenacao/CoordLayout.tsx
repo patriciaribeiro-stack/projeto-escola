@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppShell, type TabItem } from '../../components/AppShell'
-import { IconGrid, IconBook, IconBell, IconCalendar, IconPlus, IconMic } from '../../components/Icons'
+import { IconGrid, IconBook, IconBell, IconPlus, IconMic } from '../../components/Icons'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
 import type { AtividadeAvaliativa, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral, ProvaTrimestral } from '../../types'
@@ -11,7 +11,6 @@ const baseTabs: TabItem[] = [
   { to: '/coordenacao/postar', label: 'Publicar', icon: IconPlus },
   { to: '/coordenacao/turma', label: 'Turma', icon: IconBook },
   { to: '/coordenacao/notificacoes', label: 'Notificações', icon: IconBell },
-  { to: '/coordenacao/eventos', label: 'Eventos', icon: IconCalendar },
   { to: '/coordenacao/atendimentos', label: 'Atendimentos', icon: IconMic },
 ]
 

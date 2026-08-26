@@ -30,7 +30,6 @@ import CoordLayout from './screens/coordenacao/CoordLayout'
 import Painel from './screens/coordenacao/Painel'
 import CoordTurma from './screens/coordenacao/Turma'
 import Notificacoes from './screens/coordenacao/Notificacoes'
-import Eventos from './screens/coordenacao/Eventos'
 import CoordPostar from './screens/coordenacao/Postar'
 import Atendimentos from './screens/coordenacao/Atendimentos'
 
@@ -143,7 +142,6 @@ function Router() {
         <Route path="postar" element={<CoordPostar />} />
         <Route path="turma" element={<CoordTurma />} />
         <Route path="notificacoes" element={<Notificacoes />} />
-        <Route path="eventos" element={<Eventos />} />
         <Route path="atendimentos" element={<Atendimentos />} />
       </Route>
 

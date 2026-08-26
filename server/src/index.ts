@@ -2187,7 +2187,7 @@ app.patch('/api/evento-respostas/:id/presenca', async (req, res) => {
   await enviarPushParaPapel('coordenacao', {
     titulo: presenca === 'confirmado' ? 'Presença confirmada em evento' : 'Presença recusada em evento',
     corpo: `${aluno?.nome ?? 'Um responsável'} — ${evento?.titulo ?? 'evento'}.`,
-    url: '/coordenacao/eventos',
+    url: '/coordenacao?sub=eventos',
   })
 })
 

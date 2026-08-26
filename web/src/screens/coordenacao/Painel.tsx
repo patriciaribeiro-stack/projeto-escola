@@ -8,6 +8,7 @@ import { IconChevron } from '../../components/Icons'
 import { inputCls } from '../shared/formHelpers'
 import Feeds from './Feeds'
 import Atividades from './Atividades'
+import Eventos from './Eventos'
 import { AvaliativasCoord } from './Notificacoes'
 import ProvasTrimestrais from './ProvasTrimestrais'
 
@@ -45,7 +46,7 @@ function CaixaPainel({ titulo, count, aberta, carregado, children }: {
   )
 }
 
-type Sub = 'visao' | 'atividades' | 'feeds' | 'avaliacoes'
+type Sub = 'visao' | 'eventos' | 'feeds' | 'avaliacoes'
 
 export default function Painel() {
   const [params] = useSearchParams()
@@ -58,7 +59,7 @@ export default function Painel() {
         {(
           [
             ['visao', 'Visão geral'],
-            ['atividades', 'Atividades'],
+            ['eventos', 'Eventos'],
             ['feeds', 'Feed'],
             ['avaliacoes', 'Avaliações'],
           ] as [Sub, string][]
@@ -69,7 +70,7 @@ export default function Painel() {
         ))}
       </div>
       {sub === 'visao' && <VisaoGeral />}
-      {sub === 'atividades' && <Atividades />}
+      {sub === 'eventos' && <Eventos />}
       {sub === 'feeds' && <Feeds />}
       {sub === 'avaliacoes' && <Avaliacoes />}
     </div>
@@ -107,7 +108,16 @@ function VisaoGeral() {
       <SaidasBox />
       <AchadosBox />
       <AtestadosBox />
+      <HistoricoBox />
     </div>
+  )
+}
+
+function HistoricoBox() {
+  return (
+    <CaixaPainel titulo="Histórico" aberta={false} carregado>
+      <Atividades />
+    </CaixaPainel>
   )
 }
 
