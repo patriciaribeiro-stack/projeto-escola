@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSession } from '../../session'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
 import type { Materia, ProvaTrimestral, Turma } from '../../types'
-import { Button, Card, EmptyState, SectionLabel } from '../../components/ui'
+import { Button, Card, EmptyState, SectionLabel, formatDateBR } from '../../components/ui'
 import { inputCls } from '../shared/formHelpers'
 import { FileAttach, type Anexo } from '../../components/FileAttach'
 import { ACCEPT_PROVA, elegivelProvaTrimestral, ProvaTrimestralCard } from '../shared/ProvasTrimestrais'
@@ -18,16 +18,16 @@ function trimestreDoMes(mes: number): 1 | 2 | 3 {
   return 3
 }
 
-type Sub = 'hoje' | 'calendario'
+type Sub = 'revisao' | 'calendario'
 
 export default function ProvasTrimestrais() {
-  const [sub, setSub] = useState<Sub>('hoje')
+  const [sub, setSub] = useState<Sub>('revisao')
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-1.5 rounded-xl bg-paper-sunken p-1">
         {(
           [
-            ['hoje', 'Hoje'],
+            ['revisao', 'Revisão'],
             ['calendario', 'Calendário'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
@@ -36,34 +36,61 @@ export default function ProvasTrimestrais() {
           </button>
         ))}
       </div>
-      {sub === 'hoje' && <RevisaoHoje />}
+      {sub === 'revisao' && <Revisao />}
       {sub === 'calendario' && <Calendario />}
     </div>
   )
 }
 
-function RevisaoHoje() {
+function Revisao() {
   const { session } = useSession()
+  // Todas as provas (sem filtro de data) só pra descobrir quais datas têm prova
+  // cadastrada — o seletor abaixo só oferece essas, em vez de um calendário
+  // em branco onde a coordenação teria que adivinhar em qual dia procurar.
+  const { data: todasProvas } = usePolling<ProvaTrimestral[]>(async () => api.get('/provas-trimestrais'), 30000, [])
+  const datasComProva = [...new Set((todasProvas ?? []).map((p) => p.data))].sort()
+
+  const [dataSelecionada, setDataSelecionada] = useState<string | null>(null)
+  const inicializado = useRef(false)
+  useEffect(() => {
+    if (!todasProvas || inicializado.current) return
+    inicializado.current = true
+    setDataSelecionada(datasComProva.includes(hoje()) ? hoje() : datasComProva[0] ?? null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todasProvas])
+
   const { data: provas, reload } = usePolling<ProvaTrimestral[]>(
-    async () => api.get(`/provas-trimestrais${qs({ data: hoje() })}`),
+    async () => (dataSelecionada ? api.get(`/provas-trimestrais${qs({ data: dataSelecionada })}`) : []),
     8000,
-    [],
+    [dataSelecionada],
   )
   const { data: turmas } = usePolling<Turma[]>(async () => api.get('/turmas'), 60000, [])
   const { data: materias } = usePolling<Materia[]>(async () => api.get('/materias'), 60000, [])
   const turmaNome = (id: string) => turmas?.find((t) => t.id === id)?.nome ?? '...'
   const materiaNome = (id: string) => materias?.find((m) => m.id === id)?.nome ?? '...'
 
+  if (!todasProvas) return null
+  if (!datasComProva.length) return <EmptyState>Nenhuma prova trimestral cadastrada no calendário ainda.</EmptyState>
+
   const pendentes = (provas ?? []).filter((p) => p.estado === 'aguardando_aprovacao')
   const outras = (provas ?? []).filter((p) => p.estado !== 'aguardando_aprovacao')
 
-  if (!provas?.length) return <EmptyState>Nenhuma prova trimestral agendada para hoje.</EmptyState>
-
   return (
     <div className="flex flex-col gap-4">
+      <Card>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-wide text-faint">Data cadastrada no calendário</span>
+          <select className={inputCls} value={dataSelecionada ?? ''} onChange={(e) => setDataSelecionada(e.target.value)}>
+            {datasComProva.map((d) => (
+              <option key={d} value={d}>{formatDateBR(d)}{d === hoje() ? ' — hoje' : ''}</option>
+            ))}
+          </select>
+        </label>
+      </Card>
+
       <div className="flex flex-col gap-2">
         <SectionLabel>Aguardando sua revisão ({pendentes.length})</SectionLabel>
-        {!pendentes.length && <EmptyState>Nada pendente de revisão hoje.</EmptyState>}
+        {!pendentes.length && <EmptyState>Nada pendente de revisão nesse dia.</EmptyState>}
         {pendentes.map((p) => (
           <RevisaoCard
             key={p.id}
@@ -77,7 +104,7 @@ function RevisaoHoje() {
       </div>
       {!!outras.length && (
         <div className="flex flex-col gap-2">
-          <SectionLabel>Outras provas de hoje</SectionLabel>
+          <SectionLabel>Outras provas desse dia</SectionLabel>
           {outras.map((p) => (
             <ProvaTrimestralCard key={p.id} prova={p} turmaNome={turmaNome(p.turmaId)} materiaNome={materiaNome(p.materiaId)} />
           ))}

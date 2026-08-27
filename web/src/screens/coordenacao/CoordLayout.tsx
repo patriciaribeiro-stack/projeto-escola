@@ -14,10 +14,6 @@ const baseTabs: TabItem[] = [
   { to: '/coordenacao/atendimentos', label: 'Atendimentos', icon: IconMic },
 ]
 
-function hoje() {
-  return new Date().toISOString().slice(0, 10)
-}
-
 export default function CoordLayout() {
   const navigate = useNavigate()
   const { data: gerais } = usePolling<OcorrenciaGeral[]>(
@@ -40,12 +36,8 @@ export default function CoordLayout() {
   const avaliativasNaoVistas = atividadesAvaliativas?.filter((a) => !a.vistoPelaCoordenacaoEm).length ?? 0
   const { data: medicacoes } = usePolling<MedicacaoAgendada[]>(async () => api.get('/medicacoes'), 8000, [])
   const medicacoesNaoVistas = medicacoes?.filter((m) => !m.vistoPelaCoordenacaoEm).length ?? 0
-  const { data: provasTrimestraisHoje } = usePolling<ProvaTrimestral[]>(
-    async () => api.get(`/provas-trimestrais${qs({ data: hoje() })}`),
-    8000,
-    [],
-  )
-  const provasTrimestraisPendentes = provasTrimestraisHoje?.filter((p) => p.estado === 'aguardando_aprovacao').length ?? 0
+  const { data: provasTrimestraisTodas } = usePolling<ProvaTrimestral[]>(async () => api.get('/provas-trimestrais'), 8000, [])
+  const provasTrimestraisPendentes = provasTrimestraisTodas?.filter((p) => p.estado === 'aguardando_aprovacao').length ?? 0
   const totalBadge = pendentes + respondidas + aguardandoLiberacaoSaude + respondidasSaude + medicacoesNaoVistas
   const painelBadge = provasTrimestraisPendentes + avaliativasNaoVistas
 

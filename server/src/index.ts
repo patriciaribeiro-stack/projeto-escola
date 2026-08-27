@@ -579,7 +579,34 @@ app.patch('/api/configuracao', async (req, res) => {
 })
 
 // ---------- Turmas ----------
-app.get('/api/turmas', (_req, res) => res.json([...db.data.turmas].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))))
+// Ordem pedagógica (não alfabética) — Berçário, Maternal, Jardim, Pré, depois 1º ao 9º ano.
+// Baseada no nome em vez de "serie" porque esse campo não é preenchido de forma
+// confiável no cadastro hoje (a maioria das turmas está com serie undefined).
+const ORDEM_INFANTIL: [RegExp, number][] = [
+  [/ber[çc]ári?o/i, 0],
+  [/maternal\s*(i|1)\b/i, 1],
+  [/maternal\s*(ii|2)\b/i, 2],
+  [/jardim\s*(i|1)\b/i, 3],
+  [/jardim\s*(ii|2)\b/i, 4],
+  [/pr[ée]\s*(i|1)\b/i, 5],
+  [/pr[ée]\s*(ii|2)\b/i, 6],
+  [/jardim/i, 3],
+  [/pr[ée]/i, 5],
+  [/maternal/i, 1],
+]
+function turmaRank(t: { nome: string; segmento: string }): number {
+  if (t.segmento === 'infantil') {
+    for (const [re, rank] of ORDEM_INFANTIL) if (re.test(t.nome)) return rank
+    return 50
+  }
+  const m = t.nome.match(/(\d+)/)
+  return m ? 100 + Number(m[1]) : 200
+}
+function ordenarTurmas<T extends { nome: string; segmento: string }>(turmas: T[]): T[] {
+  return [...turmas].sort((a, b) => turmaRank(a) - turmaRank(b) || a.nome.localeCompare(b.nome, 'pt-BR'))
+}
+
+app.get('/api/turmas', (_req, res) => res.json(ordenarTurmas(db.data.turmas)))
 
 app.post('/api/turmas', async (req, res) => {
   const item = { id: id(), ...req.body }

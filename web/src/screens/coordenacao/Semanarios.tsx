@@ -216,7 +216,9 @@ export default function Semanarios() {
         <TurmaSemanarios
           key={t.id}
           turma={t}
-          semanarios={(semanarios ?? []).filter((s) => s.turmaId === t.id && s.estado !== 'rascunho')}
+          semanarios={(semanarios ?? [])
+            .filter((s) => s.turmaId === t.id && s.estado !== 'rascunho')
+            .sort((a, b) => a.professorNome.localeCompare(b.professorNome, 'pt-BR'))}
           onMudou={reload}
         />
       ))}
