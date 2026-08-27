@@ -4,6 +4,7 @@ import { api, qs } from '../../api'
 import type { Aviso, FotoRotina, Turma } from '../../types'
 import { Card, EmptyState, SectionLabel, timeAgo } from '../../components/ui'
 import { PhotoCarousel } from '../../components/PhotoCarousel'
+import { inputCls } from '../shared/formHelpers'
 
 export default function Feeds() {
   const { data: turmas } = usePolling<Turma[]>(async () => api.get('/turmas'), 60000, [])
@@ -32,17 +33,12 @@ export default function Feeds() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 overflow-x-auto rounded-xl bg-paper-sunken p-1">
-        {turmas.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTurmaId(t.id)}
-            className={`flex-1 whitespace-nowrap rounded-lg border border-line px-3 py-2 text-[12.5px] font-bold ${turmaAtiva === t.id ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}
-          >
-            {t.nome}
-          </button>
-        ))}
-      </div>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-bold uppercase tracking-wide text-faint">Turma</span>
+        <select className={inputCls} value={turmaAtiva} onChange={(e) => setTurmaId(e.target.value)}>
+          {turmas.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
+        </select>
+      </label>
 
       {!!fotos?.length && (
         <div>
