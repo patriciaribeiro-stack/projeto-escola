@@ -24,7 +24,7 @@ export default function AtendimentosTab() {
       <p className="text-[12.5px] text-muted">
         Relatórios de conversas com a coordenação sobre seu filho(a). Quando um relatório estiver pronto, ele aparece aqui pra você conferir e assinar.
       </p>
-      {!visiveis.length && <EmptyState>Nenhum atendimento registrado ainda.</EmptyState>}
+      {!visiveis.length && <EmptyState>Nenhuma reunião registrada ainda.</EmptyState>}
       {visiveis.map((a) => (
         <AtendimentoCard key={a.id} atendimento={a} alunoNome={nomeAluno(a.alunoId)} onReload={reload} />
       ))}

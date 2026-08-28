@@ -11,7 +11,7 @@ const baseTabs: TabItem[] = [
   { to: '/coordenacao/postar', label: 'Publicar', icon: IconPlus },
   { to: '/coordenacao/turma', label: 'Turma', icon: IconBook },
   { to: '/coordenacao/notificacoes', label: 'Notificações', icon: IconBell },
-  { to: '/coordenacao/atendimentos', label: 'Atendimentos', icon: IconMic },
+  { to: '/coordenacao/atendimentos', label: 'Reuniões', icon: IconMic },
 ]
 
 export default function CoordLayout() {

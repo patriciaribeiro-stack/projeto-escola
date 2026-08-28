@@ -11,7 +11,7 @@ const TABS: [Tab, string][] = [
   ['eventos', 'Eventos'],
   ['alimentacao', 'Alimentação'],
   ['achados', 'Achados e Perdidos'],
-  ['atendimentos', 'Atendimentos'],
+  ['atendimentos', 'Reuniões'],
 ]
 
 export default function Escola() {

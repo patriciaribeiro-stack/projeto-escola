@@ -14,7 +14,7 @@ function imprimirAtendimento(atendimento: Atendimento, alunoNome: string, paiNom
     ? `<img src="${atendimento.assinaturaDataUrl}" style="height:70px" /><p class="meta">Assinado digitalmente em ${atendimento.assinadoEm ? new Date(atendimento.assinadoEm).toLocaleString('pt-BR') : ''}</p>`
     : `<div style="margin-top:40px; border-top:1px solid #333; width:280px;"></div><p class="meta">Assinatura de ${paiNome}</p>`
   janela.document.write(`<!doctype html>
-<html><head><meta charset="utf-8" /><title>Relatório de atendimento — ${alunoNome}</title>
+<html><head><meta charset="utf-8" /><title>Relatório de reunião — ${alunoNome}</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #1c2b26; padding: 32px; }
@@ -26,9 +26,9 @@ function imprimirAtendimento(atendimento: Atendimento, alunoNome: string, paiNom
 </style></head>
 <body>
   <div class="cabecalho">
-    <h1>Relatório de atendimento</h1>
+    <h1>Relatório de reunião</h1>
     <p class="meta">${alunoNome} · Responsável: ${paiNome} · ${formatDateBR(atendimento.data)}</p>
-    <p class="meta">Atendido por ${atendimento.coordenadoraNome}</p>
+    <p class="meta">Conduzida por ${atendimento.coordenadoraNome}</p>
   </div>
   <h2>Resumo da conversa</h2>
   <p>${atendimento.resumo || '(sem resumo registrado)'}</p>
@@ -53,7 +53,7 @@ export default function Atendimentos() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Button onClick={() => setCriando((v) => !v)}>{criando ? 'Cancelar' : '+ Novo atendimento'}</Button>
+      <Button onClick={() => setCriando((v) => !v)}>{criando ? 'Cancelar' : '+ Nova reunião'}</Button>
 
       {criando && (
         <NovoAtendimento
@@ -66,8 +66,8 @@ export default function Atendimentos() {
         />
       )}
 
-      <SectionLabel>Atendimentos registrados</SectionLabel>
-      {!atendimentos?.length && <EmptyState>Nenhum atendimento registrado ainda.</EmptyState>}
+      <SectionLabel>Reuniões registradas</SectionLabel>
+      {!atendimentos?.length && <EmptyState>Nenhuma reunião registrada ainda.</EmptyState>}
       <div className="flex flex-col gap-2.5">
         {atendimentos?.map((a) => (
           <AtendimentoCard
@@ -125,7 +125,7 @@ function NovoAtendimento({ alunos, pais, turmas, coordenadoraId, coordenadoraNom
 
   return (
     <Card className="flex flex-col gap-3">
-      <SectionLabel>Novo atendimento</SectionLabel>
+      <SectionLabel>Nova reunião</SectionLabel>
 
       <div className="grid grid-cols-2 gap-2.5">
         <Field label="Turma">
@@ -173,7 +173,7 @@ function NovoAtendimento({ alunos, pais, turmas, coordenadoraId, coordenadoraNom
         </Field>
       )}
 
-      <Field label="Resumo do atendimento">
+      <Field label="Resumo da reunião">
         <textarea
           autoComplete="off"
           className={inputCls}
@@ -247,7 +247,7 @@ function AtendimentoCard({ atendimento, alunoNome, paiNome, onReload }: {
           {atendimento.audioDataUrl && <audio controls src={atendimento.audioDataUrl} className="w-full" />}
 
           {atendimento.estado === 'rascunho' ? (
-            <Field label="Resumo do atendimento">
+            <Field label="Resumo da reunião">
               <textarea autoComplete="off" className={inputCls} rows={5} value={resumo} onChange={(e) => setResumo(e.target.value)} onBlur={salvarEdicao} />
             </Field>
           ) : (

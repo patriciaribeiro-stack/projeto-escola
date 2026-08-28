@@ -27,7 +27,7 @@ export default function Postar() {
 
   return (
     <div className="flex flex-col gap-4">
-      <select className={`${inputCls} font-bold`} value={turmaAtiva} onChange={(e) => setTurmaId(e.target.value)}>
+      <select className={`${inputCls} w-auto min-w-[180px] self-center text-center font-bold`} value={turmaAtiva} onChange={(e) => setTurmaId(e.target.value)}>
         {turmas.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
       </select>
 

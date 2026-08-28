@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { usePolling } from '../../usePolling'
 import { api } from '../../api'
 import type { Aluno, Evento, EventoResposta, Turma } from '../../types'
-import { Button, Card, CategoriaChip, EmptyState, Pill, SectionLabel, formatDateBR, formatBRL } from '../../components/ui'
-import { IconCalendar } from '../../components/Icons'
+import { Button, Card, EmptyState, Pill, SectionLabel, formatDateBR, formatBRL } from '../../components/ui'
 import { inputCls as cls } from '../shared/formHelpers'
 
 function parseValorBR(raw: string) {
@@ -79,7 +78,6 @@ export default function Eventos() {
   return (
     <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5">
       <div className="flex flex-col gap-4">
-        <CategoriaChip categoria="eventos" icon={IconCalendar}>Eventos</CategoriaChip>
         <Button onClick={() => setNovo((v) => !v)} variant={novo ? 'ghost' : 'primary'}>
           {novo ? 'Cancelar' : 'Novo evento'}
         </Button>

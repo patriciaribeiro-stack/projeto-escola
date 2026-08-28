@@ -4,8 +4,7 @@ import { useSession } from '../../session'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
 import type { Aluno, AtividadeAvaliativa, Materia, MedicacaoAgendada, Ocorrencia, OcorrenciaGeral, Presenca, Turma } from '../../types'
-import { Button, Card, CategoriaChip, EmptyState, Pill, SectionLabel, formatDateBR, timeAgo } from '../../components/ui'
-import { IconCross } from '../../components/Icons'
+import { Button, Card, EmptyState, Pill, SectionLabel, formatDateBR, timeAgo } from '../../components/ui'
 import { FichaMedicaView } from '../shared/FichaMedica'
 import { inputCls } from '../shared/formHelpers'
 import { MedicacaoCard } from '../shared/Medicacoes'
@@ -314,7 +313,6 @@ function SaudeCoord() {
 
   return (
     <div className="flex flex-col gap-4">
-      <CategoriaChip categoria="saude" icon={IconCross}>Saúde</CategoriaChip>
       {!aberto ? (
         <Button onClick={() => setAberto(true)}>Registrar ocorrência de saúde</Button>
       ) : (
