@@ -26,8 +26,24 @@
   --color-red: #e2483f;
   --color-red-light: #fbe1de;
 
+  /* Paleta do Painel da coordenação (mockup) — tons próprios pras abas e
+     ícones dos cards, à parte da paleta geral acima pra não mudar o
+     resto do app enquanto isso não for aprovado pras outras telas. */
+  --color-navy-deep: #16273f;
+  --color-tab-blue: #4e7fb0;
+  --color-tab-blue-tint: #e5eef6;
+  --color-tab-terracotta: #c97b4a;
+  --color-tab-terracotta-tint: #f8e9dd;
+  --color-tab-sage: #6b9b6e;
+  --color-tab-sage-tint: #e7f1e7;
+  --color-tab-mustard: #c79a2e;
+  --color-tab-mustard-tint: #f8f0d9;
+  --color-alert: #c85c4a;
+  --color-alert-tint: #f9e4e0;
+
   --font-display: "Inter", -apple-system, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-body: "Inter", -apple-system, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-heading-painel: "Baloo 2", "Inter", -apple-system, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 

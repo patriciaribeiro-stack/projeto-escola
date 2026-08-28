@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ComponentType, type ReactNode, type SVGProps } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { usePolling } from '../../usePolling'
 import { api, qs } from '../../api'
 import type { AchadoPerdido, Aluno, Atestado, SaidaAntecipada, Substituto, Turma } from '../../types'
-import { Button, Card, EmptyState, Pill, formatDateBR, timeAgo } from '../../components/ui'
-import { IconChevron } from '../../components/Icons'
+import { Button, Card, EmptyState, formatDateBR, timeAgo } from '../../components/ui'
+import { IconChevron, IconUsers, IconClock, IconHeart, IconFileCheck, IconHistory } from '../../components/Icons'
 import { inputCls } from '../shared/formHelpers'
 import Feeds from './Feeds'
 import Atividades from './Atividades'
@@ -16,9 +16,28 @@ function hoje() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function CaixaPainel({ titulo, count, aberta, carregado, children }: {
+// Paleta do mockup do Painel — ver web/src/index.css pros tokens --color-tab-*.
+// Cada aba tem seu par cor-sólida/cor-tint; os cards usam esse mesmo par pro
+// círculo do ícone. "alert" é reservado pra contagens que pedem atenção da
+// coordenação (em vez de contagem só informativa, que fica cinza/neutra).
+type TomCaixa = 'blue' | 'sage' | 'alert' | 'muted'
+
+const TOM_ICONE: Record<TomCaixa, { bg: string; fg: string }> = {
+  blue: { bg: 'bg-tab-blue-tint', fg: 'text-tab-blue' },
+  sage: { bg: 'bg-tab-sage-tint', fg: 'text-tab-sage' },
+  alert: { bg: 'bg-alert-tint', fg: 'text-alert' },
+  muted: { bg: 'bg-paper-sunken', fg: 'text-faint' },
+}
+
+function CaixaPainel({
+  titulo, preview, icon: Icon, tomIcone = 'muted', count, tomBadge = 'alert', aberta, carregado, children,
+}: {
   titulo: string
+  preview: string
+  icon: ComponentType<SVGProps<SVGSVGElement>>
+  tomIcone?: TomCaixa
   count?: number
+  tomBadge?: 'alert' | 'neutral'
   aberta: boolean
   carregado: boolean
   children: ReactNode
@@ -32,21 +51,75 @@ function CaixaPainel({ titulo, count, aberta, carregado, children }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carregado, aberta])
 
+  const tom = TOM_ICONE[tomIcone]
+
   return (
-    <Card className="p-0">
-      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between gap-2 p-4 text-left">
-        <span className="text-[13px] font-bold">{titulo}</span>
-        <div className="flex items-center gap-2">
-          {!!count && <Pill tone="red" dot>{count}</Pill>}
-          <IconChevron className={`h-4 w-4 flex-shrink-0 text-faint transition-transform ${open ? 'rotate-90' : ''}`} />
-        </div>
+    <div className="overflow-hidden rounded-[18px] border border-line bg-paper-raised shadow-[0_1px_2px_rgba(36,30,10,0.03)]">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center gap-3 p-4 text-left">
+        <span className={`flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-xl ${tom.bg}`}>
+          <Icon className={`h-5 w-5 ${tom.fg}`} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <div className="font-heading-painel text-[15.5px] font-semibold text-ink">{titulo}</div>
+          <div className="mt-0.5 truncate text-[12.5px] text-muted">{preview}</div>
+        </span>
+        {!!count && (
+          <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[12px] font-bold text-white ${tomBadge === 'alert' ? 'bg-alert' : 'bg-faint'}`}>
+            {count}
+          </span>
+        )}
+        <IconChevron className={`h-4 w-4 flex-shrink-0 text-[#c7c2b4] transition-transform ${open ? 'rotate-90' : ''}`} />
       </button>
       {open && <div className="border-t border-line p-4 pt-3">{children}</div>}
-    </Card>
+    </div>
+  )
+}
+
+function ResumoStrip() {
+  const { data: substitutos } = usePolling<Substituto[]>(async () => api.get('/substitutos'), 10000, [])
+  const { data: saidas } = usePolling<SaidaAntecipada[]>(async () => api.get(`/saidas-antecipadas${qs({ data: hoje() })}`), 8000, [])
+  const { data: achados } = usePolling<AchadoPerdido[]>(async () => api.get('/achados'), 6000, [])
+  const { data: atestados } = usePolling<Atestado[]>(async () => api.get('/atestados'), 8000, [])
+
+  const temSubstituicao = !!substitutos?.some((s) => s.turmaAtualId)
+  const totalSaidas = saidas?.length ?? 0
+  const achadosPendentes = (achados ?? []).filter((a) => a.estado === 'reportado').length
+  const atestadosPendentes = (atestados ?? []).filter((a) => !a.vistoPelaCoordenacaoEm).length
+  const total = (temSubstituicao ? 1 : 0) + totalSaidas + achadosPendentes + atestadosPendentes
+
+  const pontos = [
+    temSubstituicao && 'bg-tab-blue',
+    totalSaidas > 0 && 'bg-tab-blue',
+    achadosPendentes > 0 && 'bg-tab-sage',
+    atestadosPendentes > 0 && 'bg-alert',
+  ].filter((x): x is string => !!x)
+
+  return (
+    <div className="flex items-center gap-2.5 rounded-2xl bg-navy-deep px-4 py-3">
+      <p className="text-[13.5px] font-medium text-white/90">
+        {total > 0 ? (
+          <>Hoje você tem <span className="font-heading-painel font-semibold text-white">{total} {total === 1 ? 'pendência' : 'pendências'}</span></>
+        ) : (
+          <span className="font-heading-painel font-semibold text-white">Nenhuma pendência hoje</span>
+        )}
+      </p>
+      {!!pontos.length && (
+        <div className="ml-auto flex flex-shrink-0 gap-1">
+          {pontos.map((cor, i) => <span key={i} className={`h-[7px] w-[7px] rounded-full ${cor}`} />)}
+        </div>
+      )}
+    </div>
   )
 }
 
 type Sub = 'visao' | 'eventos' | 'feeds' | 'avaliacoes'
+
+const TAB_TOM: Record<Sub, { ativo: string; inativo: string }> = {
+  visao: { ativo: 'bg-tab-blue text-white', inativo: 'bg-tab-blue-tint text-tab-blue' },
+  eventos: { ativo: 'bg-tab-terracotta text-white', inativo: 'bg-tab-terracotta-tint text-tab-terracotta' },
+  feeds: { ativo: 'bg-tab-sage text-white', inativo: 'bg-tab-sage-tint text-tab-sage' },
+  avaliacoes: { ativo: 'bg-tab-mustard text-white', inativo: 'bg-tab-mustard-tint text-tab-mustard' },
+}
 
 export default function Painel() {
   const [params] = useSearchParams()
@@ -55,7 +128,8 @@ export default function Painel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 rounded-xl bg-paper-sunken p-1">
+      <ResumoStrip />
+      <div className="flex gap-2 overflow-x-auto">
         {(
           [
             ['visao', 'Visão geral'],
@@ -64,7 +138,7 @@ export default function Painel() {
             ['avaliacoes', 'Avaliações'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[13.5px] font-semibold transition-colors ${sub === key ? TAB_TOM[key].ativo : TAB_TOM[key].inativo}`}>
             {label}
           </button>
         ))}
@@ -83,14 +157,14 @@ function Avaliacoes() {
   const [sub, setSub] = useState<SubAvaliacoes>('provas')
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 rounded-xl bg-paper-sunken p-1">
+      <div className="flex gap-2 overflow-x-auto">
         {(
           [
             ['provas', 'Provas Trimestrais'],
             ['avaliativas', 'Atividade Avaliativa'],
           ] as [SubAvaliacoes, string][]
         ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[13.5px] font-semibold transition-colors ${sub === key ? TAB_TOM.avaliacoes.ativo : TAB_TOM.avaliacoes.inativo}`}>
             {label}
           </button>
         ))}
@@ -115,7 +189,7 @@ function VisaoGeral() {
 
 function HistoricoBox() {
   return (
-    <CaixaPainel titulo="Histórico" aberta={false} carregado>
+    <CaixaPainel titulo="Histórico" preview="Ver registros anteriores" icon={IconHistory} tomIcone="muted" aberta={false} carregado>
       <Atividades />
     </CaixaPainel>
   )
@@ -153,7 +227,14 @@ function SubstitutaBox() {
   if (!substituto) return null
 
   return (
-    <CaixaPainel titulo="Professor(a) eventual" aberta={!!substituto.turmaAtualId} carregado={!!substitutos}>
+    <CaixaPainel
+      titulo="Professor(a) eventual"
+      preview={substituto.turmaAtualId ? `Cobrindo ${turmaAtualNome ?? '...'}` : 'Nenhuma substituição ativa no momento'}
+      icon={IconUsers}
+      tomIcone="blue"
+      aberta={!!substituto.turmaAtualId}
+      carregado={!!substitutos}
+    >
       {substituto.turmaAtualId ? (
         <div className="flex items-center justify-between">
           <div>
@@ -185,7 +266,16 @@ function SaidasBox() {
   const nome = (id: string) => alunos?.find((a) => a.id === id)?.nome ?? '...'
 
   return (
-    <CaixaPainel titulo="Saídas antecipadas hoje" count={saidas?.length} aberta={!!saidas?.length} carregado={!!saidas}>
+    <CaixaPainel
+      titulo="Saídas antecipadas hoje"
+      preview={saidas?.length ? `${saidas.length} ${saidas.length === 1 ? 'aluno sai' : 'alunos saem'} antes do horário` : 'Nenhuma saída antecipada avisada para hoje'}
+      icon={IconClock}
+      tomIcone="blue"
+      count={saidas?.length}
+      tomBadge="neutral"
+      aberta={!!saidas?.length}
+      carregado={!!saidas}
+    >
       {!saidas?.length ? (
         <EmptyState>Nenhuma saída antecipada avisada para hoje.</EmptyState>
       ) : (
@@ -219,40 +309,48 @@ function AchadosBox() {
   const pendentes = (achados ?? []).filter((a) => a.estado === 'reportado').length
 
   return (
-    <CaixaPainel titulo="Achados e Perdidos" count={pendentes} aberta={pendentes > 0} carregado={!!achados}>
+    <CaixaPainel
+      titulo="Achados e Perdidos"
+      preview={pendentes > 0 ? `${pendentes} ${pendentes === 1 ? 'item sem dono' : 'itens sem dono'}` : 'Nenhum item reportado'}
+      icon={IconHeart}
+      tomIcone="sage"
+      count={pendentes}
+      aberta={pendentes > 0}
+      carregado={!!achados}
+    >
       {!achados?.length ? (
         <EmptyState>Nenhum item reportado.</EmptyState>
       ) : (
-        <div className="flex flex-col gap-2.5">
-          {achados.map((a) => (
-            <Card key={a.id}>
-              <div className="flex items-start gap-3">
-                {a.fotoDataUrl ? (
-                  <a href={a.fotoDataUrl} download={a.fotoNome ?? 'foto'} target="_blank" rel="noreferrer">
-                    <img src={a.fotoDataUrl} alt="" className="h-12 w-12 flex-shrink-0 rounded-lg object-cover" />
-                  </a>
-                ) : (
-                  <div className="h-12 w-12 flex-shrink-0 rounded-lg bg-paper-sunken" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-bold">{nome(a.alunoId)}</span>
-                    <Pill tone={a.estado === 'encontrado' ? 'green' : 'red'}>{a.estado === 'encontrado' ? 'Encontrado' : 'Procurando'}</Pill>
-                  </div>
-                  <p className="mt-1 text-[12.5px] text-muted">{a.descricao}</p>
+        <div className="flex flex-col">
+          {achados.map((a, i) => (
+            <div key={a.id} className={`flex gap-3 ${i > 0 ? 'mt-3 border-t border-line pt-3' : ''}`}>
+              {a.fotoDataUrl ? (
+                <a href={a.fotoDataUrl} download={a.fotoNome ?? 'foto'} target="_blank" rel="noreferrer" className="flex-shrink-0">
+                  <img src={a.fotoDataUrl} alt="" className="h-[54px] w-[54px] rounded-xl object-cover" />
+                </a>
+              ) : (
+                <div className="h-[54px] w-[54px] flex-shrink-0 rounded-xl bg-tab-sage-tint" />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="font-heading-painel text-[14.5px] font-semibold text-ink">{nome(a.alunoId)}</div>
+                <span className={`mt-0.5 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold ${a.estado === 'encontrado' ? 'bg-green-light text-green-dark' : 'bg-tab-terracotta-tint text-tab-terracotta'}`}>
+                  {a.estado === 'encontrado' ? 'Encontrado' : 'Procurando'}
+                </span>
+                <p className="mt-1 text-[13px] text-muted">{a.descricao}</p>
+                <div className="mt-1 flex items-center gap-3">
                   {a.fotoDataUrl && (
-                    <a href={a.fotoDataUrl} download={a.fotoNome ?? 'foto'} className="mt-1 inline-block text-[11.5px] font-bold text-blue underline">
+                    <a href={a.fotoDataUrl} download={a.fotoNome ?? 'foto'} className="text-[13px] font-semibold text-tab-blue">
                       Ver foto
                     </a>
                   )}
+                  {a.estado === 'reportado' && (
+                    <button onClick={() => marcarEncontrado(a.id)} className="text-[13px] font-semibold text-tab-blue">
+                      Marcar como encontrado
+                    </button>
+                  )}
                 </div>
               </div>
-              {a.estado === 'reportado' && (
-                <button onClick={() => marcarEncontrado(a.id)} className="mt-2 text-[12px] font-bold text-blue">
-                  Marcar como encontrado
-                </button>
-              )}
-            </Card>
+            </div>
           ))}
         </div>
       )}
@@ -274,7 +372,15 @@ function AtestadosBox() {
   }, [atestados])
 
   return (
-    <CaixaPainel titulo="Atestados" count={naoVistos.length} aberta={naoVistos.length > 0} carregado={!!atestados}>
+    <CaixaPainel
+      titulo="Atestados"
+      preview={naoVistos.length > 0 ? `${naoVistos.length} aguardando análise` : 'Nenhum atestado enviado ainda'}
+      icon={IconFileCheck}
+      tomIcone="alert"
+      count={naoVistos.length}
+      aberta={naoVistos.length > 0}
+      carregado={!!atestados}
+    >
       {!atestados?.length ? (
         <EmptyState>Nenhum atestado enviado ainda.</EmptyState>
       ) : (
