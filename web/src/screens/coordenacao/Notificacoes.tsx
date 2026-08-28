@@ -8,8 +8,15 @@ import { Button, Card, EmptyState, Pill, SectionLabel, formatDateBR, timeAgo } f
 import { FichaMedicaView } from '../shared/FichaMedica'
 import { inputCls } from '../shared/formHelpers'
 import { MedicacaoCard } from '../shared/Medicacoes'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 type Sub = 'saude' | 'gerais' | 'medicacao'
+
+const TABS: TabOption<Sub>[] = [
+  { key: 'saude', label: 'Saúde' },
+  { key: 'gerais', label: 'Ocorrência' },
+  { key: 'medicacao', label: 'Medicação' },
+]
 
 export default function Notificacoes() {
   const [params] = useSearchParams()
@@ -17,19 +24,7 @@ export default function Notificacoes() {
   const [sub, setSub] = useState<Sub>(subInicial)
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 overflow-x-auto rounded-xl bg-paper-sunken p-1">
-        {(
-          [
-            ['saude', 'Saúde'],
-            ['gerais', 'Ocorrência'],
-            ['medicacao', 'Medicação'],
-          ] as [Sub, string][]
-        ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={TABS} value={sub} onChange={setSub} />
       {sub === 'saude' && <SaudeCoord />}
       {sub === 'gerais' && <GeraisCoord />}
       {sub === 'medicacao' && <MedicacaoCoord />}

@@ -5,6 +5,7 @@ import type { Aluno, Licao, LicaoEstado, LicaoStatus, Turma } from '../../types'
 import { Avatar, Button, Card, CategoriaChip, EmptyState, Pill, formatDateBR, timeAgo } from '../../components/ui'
 import { IconBook } from '../../components/Icons'
 import { inputCls } from './formHelpers'
+import { TabPills } from '../../components/TabGroup'
 
 const ESTADOS: { value: LicaoEstado; label: string; tone: 'green' | 'red' | 'muted' }[] = [
   { value: 'pendente', label: 'Pendente', tone: 'red' },
@@ -65,17 +66,12 @@ export function LicoesLista({ turmaId, podeEditar, autorConferir }: { turmaId?: 
               {turmas?.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
             </select>
           )}
-          <div className="flex flex-wrap gap-1.5">
-            {FILTROS_STATUS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setFiltroStatus(f.value)}
-                className={`rounded-full border-[1.5px] px-3 py-1.5 text-[12px] font-semibold ${filtroStatus === f.value ? 'border-green bg-green text-white' : 'border-line text-muted'}`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+          <TabPills
+            tabs={FILTROS_STATUS.map((f) => ({ key: f.value, label: f.label }))}
+            value={filtroStatus}
+            onChange={setFiltroStatus}
+            tom="sage"
+          />
         </Card>
       )}
 

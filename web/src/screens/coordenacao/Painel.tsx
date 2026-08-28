@@ -5,6 +5,7 @@ import { api, qs } from '../../api'
 import type { AchadoPerdido, Aluno, Atestado, SaidaAntecipada, Substituto, Turma } from '../../types'
 import { Button, Card, EmptyState, formatDateBR, timeAgo } from '../../components/ui'
 import { IconChevron, IconUsers, IconClock, IconHeart, IconFileCheck, IconHistory } from '../../components/Icons'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 import { inputCls } from '../shared/formHelpers'
 import Feeds from './Feeds'
 import Atividades from './Atividades'
@@ -114,12 +115,12 @@ function ResumoStrip() {
 
 type Sub = 'visao' | 'eventos' | 'feeds' | 'avaliacoes'
 
-const TAB_TOM: Record<Sub, { ativo: string; inativo: string }> = {
-  visao: { ativo: 'bg-tab-blue text-white', inativo: 'bg-tab-blue-tint text-tab-blue' },
-  eventos: { ativo: 'bg-tab-terracotta text-white', inativo: 'bg-tab-terracotta-tint text-tab-terracotta' },
-  feeds: { ativo: 'bg-tab-sage text-white', inativo: 'bg-tab-sage-tint text-tab-sage' },
-  avaliacoes: { ativo: 'bg-tab-mustard text-white', inativo: 'bg-tab-mustard-tint text-tab-mustard' },
-}
+const PAINEL_TABS: TabOption<Sub>[] = [
+  { key: 'visao', label: 'Visão geral', tom: 'blue' },
+  { key: 'eventos', label: 'Eventos', tom: 'terracotta' },
+  { key: 'feeds', label: 'Feed', tom: 'sage' },
+  { key: 'avaliacoes', label: 'Avaliações', tom: 'mustard' },
+]
 
 export default function Painel() {
   const [params] = useSearchParams()
@@ -129,20 +130,7 @@ export default function Painel() {
   return (
     <div className="flex flex-col gap-4">
       <ResumoStrip />
-      <div className="flex gap-2 overflow-x-auto">
-        {(
-          [
-            ['visao', 'Visão geral'],
-            ['eventos', 'Eventos'],
-            ['feeds', 'Feed'],
-            ['avaliacoes', 'Avaliações'],
-          ] as [Sub, string][]
-        ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[13.5px] font-semibold transition-colors ${sub === key ? TAB_TOM[key].ativo : TAB_TOM[key].inativo}`}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={PAINEL_TABS} value={sub} onChange={setSub} />
       {sub === 'visao' && <VisaoGeral />}
       {sub === 'eventos' && <Eventos />}
       {sub === 'feeds' && <Feeds />}
@@ -153,22 +141,16 @@ export default function Painel() {
 
 type SubAvaliacoes = 'provas' | 'avaliativas'
 
+const AVALIACOES_TABS: TabOption<SubAvaliacoes>[] = [
+  { key: 'provas', label: 'Provas Trimestrais', tom: 'mustard' },
+  { key: 'avaliativas', label: 'Atividade Avaliativa', tom: 'terracotta' },
+]
+
 function Avaliacoes() {
   const [sub, setSub] = useState<SubAvaliacoes>('provas')
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-2 overflow-x-auto">
-        {(
-          [
-            ['provas', 'Provas Trimestrais'],
-            ['avaliativas', 'Atividade Avaliativa'],
-          ] as [SubAvaliacoes, string][]
-        ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[13.5px] font-semibold transition-colors ${sub === key ? TAB_TOM.avaliacoes.ativo : TAB_TOM.avaliacoes.inativo}`}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={AVALIACOES_TABS} value={sub} onChange={setSub} />
       {sub === 'provas' && <ProvasTrimestrais />}
       {sub === 'avaliativas' && <AvaliativasCoord />}
     </div>

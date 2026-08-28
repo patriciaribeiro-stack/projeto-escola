@@ -7,6 +7,7 @@ import { Button, Card, EmptyState, SectionLabel, formatDateBR } from '../../comp
 import { inputCls } from '../shared/formHelpers'
 import { FileAttach, type Anexo } from '../../components/FileAttach'
 import { ACCEPT_PROVA, elegivelProvaTrimestral, ProvaTrimestralCard } from '../shared/ProvasTrimestrais'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 function hoje() {
   return new Date().toISOString().slice(0, 10)
@@ -20,22 +21,16 @@ function trimestreDoMes(mes: number): 1 | 2 | 3 {
 
 type Sub = 'revisao' | 'calendario'
 
+const TABS: TabOption<Sub>[] = [
+  { key: 'revisao', label: 'Revisão' },
+  { key: 'calendario', label: 'Calendário' },
+]
+
 export default function ProvasTrimestrais() {
   const [sub, setSub] = useState<Sub>('revisao')
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 rounded-xl bg-paper-sunken p-1">
-        {(
-          [
-            ['revisao', 'Revisão'],
-            ['calendario', 'Calendário'],
-          ] as [Sub, string][]
-        ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={TABS} value={sub} onChange={setSub} />
       {sub === 'revisao' && <Revisao />}
       {sub === 'calendario' && <Calendario />}
     </div>

@@ -11,13 +11,13 @@ import { inputCls } from '../shared/formHelpers'
 export type RelatoriosSub = 'licoes' | 'presenca' | 'alimentacao' | 'passeios' | 'saude' | 'semanario'
 type Sub = RelatoriosSub
 
-export const RELATORIOS_TABS: [RelatoriosSub, string][] = [
-  ['licoes', 'Lições'],
-  ['presenca', 'Presença'],
-  ['alimentacao', 'Alimentação'],
-  ['passeios', 'Passeios'],
-  ['saude', 'Saúde'],
-  ['semanario', 'Semanário'],
+export const RELATORIOS_TABS: { key: RelatoriosSub; label: string }[] = [
+  { key: 'licoes', label: 'Lições' },
+  { key: 'presenca', label: 'Presença' },
+  { key: 'alimentacao', label: 'Alimentação' },
+  { key: 'passeios', label: 'Passeios' },
+  { key: 'saude', label: 'Saúde' },
+  { key: 'semanario', label: 'Semanário' },
 ]
 
 export interface Periodo {

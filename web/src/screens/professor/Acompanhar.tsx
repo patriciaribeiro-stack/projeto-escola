@@ -7,6 +7,7 @@ import { Card, EmptyState, Pill, SectionLabel, timeAgo } from '../../components/
 import { LicoesLista } from '../shared/LicoesLista'
 import { AtividadesAvaliativasLista, elegivelAtividadeAvaliativa } from '../shared/AtividadesAvaliativas'
 import type { ProfessorContext } from './ProfessorLayout'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 type Sub = 'licoes' | 'publicacoes' | 'avaliativas'
 
@@ -19,21 +20,15 @@ export default function Acompanhar() {
   const turma = turmas?.find((t) => t.id === turmaId)
   const mostrarAvaliativas = elegivelAtividadeAvaliativa(turma)
 
-  const abas: [Sub, string][] = [
-    ['licoes', 'Lições'],
-    ['publicacoes', 'Publicações'],
-    ...(mostrarAvaliativas ? [['avaliativas', 'Avaliativas'] as [Sub, string]] : []),
+  const abas: TabOption<Sub>[] = [
+    { key: 'licoes', label: 'Lições' },
+    { key: 'publicacoes', label: 'Publicações' },
+    ...(mostrarAvaliativas ? [{ key: 'avaliativas', label: 'Avaliativas' } as TabOption<Sub>] : []),
   ]
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 rounded-xl bg-paper-sunken p-1">
-        {abas.map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={abas} value={sub} onChange={setSub} />
       {sub === 'licoes' && <LicoesLista turmaId={turmaId} />}
       {sub === 'publicacoes' && <Publicacoes turmaId={turmaId} />}
       {sub === 'avaliativas' && mostrarAvaliativas && <AtividadesAvaliativasLista turmaId={turmaId} alunos={alunos} materias={materias} />}

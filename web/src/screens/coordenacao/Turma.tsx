@@ -7,28 +7,19 @@ import type { Aluno, Relatorio, Turma as TurmaType } from '../../types'
 import { Card, EmptyState, Pill, timeAgo } from '../../components/ui'
 import { inputCls } from '../shared/formHelpers'
 import { LicoesLista } from '../shared/LicoesLista'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 import Relatorios, { RELATORIOS_TABS, type RelatoriosSub } from './Relatorios'
 import Semanarios from './Semanarios'
 
 type Sub = 'alunos' | 'licoes' | 'relatorios' | 'estatisticas' | 'semanario'
 
-const CATEGORIA_TABS: [Sub, string][] = [
-  ['alunos', 'Alunos'],
-  ['licoes', 'Lições'],
-  ['relatorios', 'Diário'],
-  ['estatisticas', 'Relatórios'],
-  ['semanario', 'Semanário'],
+const CATEGORIA_TABS: TabOption<Sub>[] = [
+  { key: 'alunos', label: 'Alunos', tom: 'blue' },
+  { key: 'licoes', label: 'Lições', tom: 'terracotta' },
+  { key: 'relatorios', label: 'Diário', tom: 'sage' },
+  { key: 'estatisticas', label: 'Relatórios', tom: 'mustard' },
+  { key: 'semanario', label: 'Semanário', tom: 'mauve' },
 ]
-
-// Ponto colorido + linha embaixo na aba ativa — cada categoria tem sua cor,
-// combinando com a paleta do Painel/Login (--color-tab-*).
-const CATEGORIA_TOM: Record<Sub, { dot: string; underline: string; tint: string; texto: string }> = {
-  alunos: { dot: 'bg-tab-blue', underline: 'border-tab-blue', tint: 'bg-tab-blue-tint', texto: 'text-tab-blue' },
-  licoes: { dot: 'bg-tab-terracotta', underline: 'border-tab-terracotta', tint: 'bg-tab-terracotta-tint', texto: 'text-tab-terracotta' },
-  relatorios: { dot: 'bg-tab-sage', underline: 'border-tab-sage', tint: 'bg-tab-sage-tint', texto: 'text-tab-sage' },
-  estatisticas: { dot: 'bg-tab-mustard', underline: 'border-tab-mustard', tint: 'bg-tab-mustard-tint', texto: 'text-tab-mustard' },
-  semanario: { dot: 'bg-tab-mauve', underline: 'border-tab-mauve', tint: 'bg-tab-mauve-tint', texto: 'text-tab-mauve' },
-}
 
 export default function Turma() {
   const [params] = useSearchParams()
@@ -38,42 +29,12 @@ export default function Turma() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-2xl border border-line bg-paper-raised p-3.5">
-        <div className={`flex flex-wrap items-center gap-4 ${sub === 'estatisticas' ? 'border-b border-line pb-1' : ''}`}>
-          {CATEGORIA_TABS.map(([key, label]) => {
-            const tom = CATEGORIA_TOM[key]
-            const ativa = sub === key
-            return (
-              <button
-                key={key}
-                onClick={() => setSub(key)}
-                className={`flex items-center gap-1.5 border-b-[2.5px] pb-2.5 text-[13.5px] font-semibold ${ativa ? `${tom.underline} text-navy` : 'border-transparent text-muted'}`}
-              >
-                <span className={`h-[7px] w-[7px] flex-shrink-0 rounded-full ${tom.dot}`} />
-                {label}
-              </button>
-            )
-          })}
-        </div>
-
-        {sub === 'estatisticas' && (
-          <div className="flex flex-wrap gap-1 pt-2.5">
-            {RELATORIOS_TABS.map(([key, label]) => {
-              const ativa = subRelatorio === key
-              const tom = CATEGORIA_TOM.estatisticas
-              return (
-                <button
-                  key={key}
-                  onClick={() => setSubRelatorio(key)}
-                  className={`rounded-lg px-3.5 py-1.5 text-[13px] font-semibold ${ativa ? `${tom.tint} ${tom.texto}` : 'text-muted'}`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      <TabGroup
+        tabs={CATEGORIA_TABS}
+        value={sub}
+        onChange={setSub}
+        secondary={sub === 'estatisticas' ? { tabs: RELATORIOS_TABS, value: subRelatorio, onChange: setSubRelatorio } : undefined}
+      />
 
       {sub === 'alunos' && <AlunosPorTurma />}
       {sub === 'licoes' && <Licoes />}

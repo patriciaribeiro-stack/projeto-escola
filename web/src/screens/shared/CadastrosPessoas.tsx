@@ -7,8 +7,15 @@ import { inputCls } from './formHelpers'
 import { ImportarPlanilha } from './ImportarPlanilha'
 import { avisoIdadeTurma } from './idadeMatricula'
 import { FichaResponsavelForm, fichaVazia, fichaDoPai, camposFicha, type DadosFicha } from './FichaResponsavel'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 type Sub = 'alunos' | 'pais' | 'professores'
+
+const CADASTROS_PESSOAS_TABS: TabOption<Sub>[] = [
+  { key: 'alunos', label: 'Alunos' },
+  { key: 'pais', label: 'Responsáveis' },
+  { key: 'professores', label: 'Professores' },
+]
 
 const SEGMENTO_LABEL: Record<Segmento, string> = {
   infantil: 'Educação Infantil',
@@ -402,19 +409,7 @@ export function CadastrosPessoas() {
   const [filaImpressaoProfessores, setFilaImpressaoProfessores] = useState<CredencialProfessor[]>([])
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 overflow-x-auto rounded-xl bg-paper-sunken p-1">
-        {(
-          [
-            ['alunos', 'Alunos'],
-            ['pais', 'Responsáveis'],
-            ['professores', 'Professores'],
-          ] as [Sub, string][]
-        ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line px-2 py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={CADASTROS_PESSOAS_TABS} value={sub} onChange={setSub} />
       {sub === 'alunos' && <AlunosCadastro />}
       {sub === 'pais' && <PaisCadastro filaImpressao={filaImpressaoPais} setFilaImpressao={setFilaImpressaoPais} />}
       {sub === 'professores' && <ProfessoresCadastro filaImpressao={filaImpressaoProfessores} setFilaImpressao={setFilaImpressaoProfessores} />}

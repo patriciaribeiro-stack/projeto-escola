@@ -4,14 +4,15 @@ import EventosTab from './EventosTab'
 import AchadosTab from './AchadosTab'
 import AlimentacaoTab from './AlimentacaoTab'
 import AtendimentosTab from './AtendimentosTab'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 type Tab = 'eventos' | 'alimentacao' | 'achados' | 'atendimentos'
 
-const TABS: [Tab, string][] = [
-  ['eventos', 'Eventos'],
-  ['alimentacao', 'Alimentação'],
-  ['achados', 'Achados e Perdidos'],
-  ['atendimentos', 'Reuniões'],
+const TABS: TabOption<Tab>[] = [
+  { key: 'eventos', label: 'Eventos' },
+  { key: 'alimentacao', label: 'Alimentação' },
+  { key: 'achados', label: 'Achados e Perdidos' },
+  { key: 'atendimentos', label: 'Reuniões' },
 ]
 
 export default function Escola() {
@@ -21,19 +22,7 @@ export default function Escola() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 overflow-x-auto rounded-xl bg-paper-sunken p-1">
-        {TABS.map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex-1 whitespace-nowrap rounded-lg border border-line py-2 px-2 text-[12.5px] font-bold transition-colors ${
-              tab === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={TABS} value={tab} onChange={setTab} />
 
       {tab === 'eventos' && <EventosTab />}
       {tab === 'alimentacao' && <AlimentacaoTab />}

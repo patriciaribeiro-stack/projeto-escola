@@ -4,8 +4,17 @@ import { usePolling } from '../../usePolling'
 import type { Aluno, CardapioDia, HigienizacaoTipo, Rotina, StatusRefeicao } from '../../types'
 import { Avatar, Button, Card, EmptyState, SectionLabel } from '../../components/ui'
 import { inputCls } from './formHelpers'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 type Sub = 'lancheManha' | 'almoco' | 'lancheTarde' | 'sono' | 'higiene'
+
+const TABS: TabOption<Sub>[] = [
+  { key: 'lancheManha', label: 'Lanche manhã' },
+  { key: 'almoco', label: 'Almoço' },
+  { key: 'lancheTarde', label: 'Lanche tarde' },
+  { key: 'sono', label: 'Sono' },
+  { key: 'higiene', label: 'Higiene' },
+]
 
 const STATUS_REFEICAO: { value: StatusRefeicao; label: string }[] = [
   { value: 'comeu_bem', label: 'Comeu bem' },
@@ -30,21 +39,7 @@ export function RotinaHub({ turmaId, alunos }: { turmaId: string; alunos: Aluno[
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 overflow-x-auto rounded-xl bg-paper-sunken p-1">
-        {(
-          [
-            ['lancheManha', 'Lanche manhã'],
-            ['almoco', 'Almoço'],
-            ['lancheTarde', 'Lanche tarde'],
-            ['sono', 'Sono'],
-            ['higiene', 'Higiene'],
-          ] as [Sub, string][]
-        ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line px-2.5 py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={TABS} value={sub} onChange={setSub} />
 
       <div className="flex items-center gap-2">
         <label className="text-[12px] font-bold text-muted">Dia</label>

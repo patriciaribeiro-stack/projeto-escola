@@ -7,8 +7,14 @@ import type { Aluno, Ocorrencia, Rotina, Turma } from '../../types'
 import { Button, Card, CategoriaChip, Pill, SectionLabel, timeAgo } from '../../components/ui'
 import { IconCross, IconArrowLeft } from '../../components/Icons'
 import { inputCls } from '../shared/formHelpers'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 type Tab = 'rotina' | 'saude'
+
+const TABS: TabOption<Tab>[] = [
+  { key: 'saude', label: 'Saúde' },
+  { key: 'rotina', label: 'Rotina' },
+]
 
 export default function AlunoDetalhe() {
   const { alunoId } = useParams()
@@ -28,24 +34,7 @@ export default function AlunoDetalhe() {
       </Link>
       <div className="font-display text-lg font-bold">{aluno.nome}</div>
 
-      {!ehFundamental && (
-        <div className="flex gap-1.5 overflow-x-auto rounded-xl bg-paper-sunken p-1">
-          {(
-            [
-              ['saude', 'Saúde'],
-              ['rotina', 'Rotina'],
-            ] as [Tab, string][]
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex-1 whitespace-nowrap rounded-lg border border-line px-2 py-2 text-[12.5px] font-bold ${tab === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
+      {!ehFundamental && <TabGroup tabs={TABS} value={tab} onChange={setTab} />}
 
       {(ehFundamental || tab === 'saude') && <SaudeProfessor alunoId={aluno.id} />}
       {!ehFundamental && tab === 'rotina' && <RotinaProfessor alunoId={aluno.id} />}

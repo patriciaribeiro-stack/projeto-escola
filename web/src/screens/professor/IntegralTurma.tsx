@@ -8,8 +8,15 @@ import { Avatar, Button, Card, EmptyState, Pill, SectionLabel, formatDateBR } fr
 import { RotinaHub } from '../shared/RotinaHub'
 import { FormFoto } from '../shared/PostarHub'
 import type { ProfessorContext } from './ProfessorLayout'
+import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 type Sub = 'rotina' | 'fotos' | 'licoes'
+
+const TABS: TabOption<Sub>[] = [
+  { key: 'rotina', label: 'Rotina' },
+  { key: 'fotos', label: 'Fotos' },
+  { key: 'licoes', label: 'Lições' },
+]
 
 export default function IntegralTurma() {
   const { turmaId } = useOutletContext<ProfessorContext>()
@@ -18,19 +25,7 @@ export default function IntegralTurma() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 rounded-xl bg-paper-sunken p-1">
-        {(
-          [
-            ['rotina', 'Rotina'],
-            ['fotos', 'Fotos'],
-            ['licoes', 'Lições'],
-          ] as [Sub, string][]
-        ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={TABS} value={sub} onChange={setSub} />
 
       {sub === 'rotina' && <RotinaHub turmaId={turmaId} alunos={alunos ?? null} />}
       {sub === 'fotos' && <FotosIntegral turmaId={turmaId} />}

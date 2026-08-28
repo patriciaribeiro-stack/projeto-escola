@@ -12,6 +12,7 @@ import { EditorFichaMedica, FichaMedicaView } from '../shared/FichaMedica'
 import { classificarLicao, type ClassificacaoLicao } from '../shared/LicoesLista'
 import { presencaDoAluno } from '../shared/AtividadesAvaliativas'
 import { FormNovaMedicacao, MedicacaoCard } from '../shared/Medicacoes'
+import { TabGroup, TabPills, type TabOption } from '../../components/TabGroup'
 
 type Tab = 'rotina' | 'licoes' | 'saude' | 'ocorrencias'
 
@@ -46,6 +47,13 @@ export default function MeuFilho() {
 
   if (!aluno) return null
 
+  const tabs: TabOption<Tab>[] = [
+    { key: 'rotina', label: 'Rotina' },
+    { key: 'licoes', label: 'Lição de casa' },
+    { key: 'saude', label: precisaRespostaSaude ? 'Saúde •' : 'Saúde', alerta: precisaRespostaSaude },
+    { key: 'ocorrencias', label: geralPendente ? 'Recados •' : 'Recados', alerta: geralPendente },
+  ]
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -53,26 +61,7 @@ export default function MeuFilho() {
         <div className="text-[12px] text-muted">Turma {turmaNome ?? ''}</div>
       </div>
 
-      <div className="flex gap-1.5 overflow-x-auto rounded-xl bg-paper-sunken p-1">
-        {(
-          [
-            ['rotina', 'Rotina'],
-            ['licoes', 'Lição de casa'],
-            ['saude', precisaRespostaSaude ? 'Saúde •' : 'Saúde'],
-            ['ocorrencias', geralPendente ? 'Recados •' : 'Recados'],
-          ] as [Tab, string][]
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex-1 whitespace-nowrap rounded-lg border border-line px-2 py-2 text-[12.5px] font-bold transition-colors ${
-              tab === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'
-            } ${(key === 'saude' && precisaRespostaSaude) || (key === 'ocorrencias' && geralPendente) ? 'text-red' : ''}`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabGroup tabs={tabs} value={tab} onChange={setTab} />
 
       {tab === 'rotina' && <RotinaTab alunoId={aluno.id} turmaId={aluno.turmaId} ehFundamental={ehFundamental} periodo={aluno.periodo} />}
       {tab === 'licoes' && <LicoesTab alunoId={aluno.id} turmaId={aluno.turmaId} />}
@@ -353,17 +342,7 @@ export function LicoesTab({ alunoId, turmaId, podeEnviarAnexo }: { alunoId: stri
 
   return (
     <div className="flex flex-col gap-2.5">
-      <div className="flex flex-wrap gap-1.5">
-        {filtros.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setFiltro(f.value)}
-            className={`rounded-full border-[1.5px] px-3 py-1.5 text-[12px] font-semibold ${filtro === f.value ? 'border-green bg-green text-white' : 'border-line text-muted'}`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <TabPills tabs={filtros.map((f) => ({ key: f.value, label: f.label }))} value={filtro} onChange={setFiltro} tom="sage" />
       {!itensFiltrados.length && <EmptyState>Nada encontrado com esse filtro.</EmptyState>}
       {!!itensFiltrados.length && (
       <Card className="p-0">
