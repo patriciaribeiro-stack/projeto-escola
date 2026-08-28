@@ -29,7 +29,7 @@ export default function Acompanhar() {
     <div className="flex flex-col gap-4">
       <div className="flex gap-1.5 rounded-xl bg-paper-sunken p-1">
         {abas.map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
             {label}
           </button>
         ))}

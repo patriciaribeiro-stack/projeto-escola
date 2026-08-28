@@ -27,7 +27,7 @@ export function AppShell({
   const navigate = useNavigate()
 
   return (
-    <div className="mx-auto flex h-dvh max-w-[480px] flex-col bg-paper lg:max-w-4xl">
+    <div className="bg-paper-textured mx-auto flex h-dvh max-w-[480px] flex-col lg:max-w-4xl">
       <header className="flex items-center justify-between bg-navy px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white">

@@ -60,7 +60,7 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-paper px-6 py-10">
+    <div className="bg-paper-textured flex min-h-dvh flex-col items-center justify-center px-6 py-10">
       <div className="mb-8 flex items-center gap-3 rounded-2xl bg-navy px-5 py-3.5 shadow-[0_0_0_0.5px_rgba(0,0,0,.06)]">
         <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white">
           <span className="font-display text-[13px] font-bold text-navy">VB</span>

@@ -37,11 +37,18 @@ body,
   height: 100%;
 }
 
-body {
-  margin: 0;
+/* Textura sutil de granulado sobre o fundo — usada tanto no body quanto no
+   contêiner do AppShell, que é o elemento realmente visível (cobre a tela
+   inteira por cima do body, então o texturizar só no body nunca aparecia). */
+.bg-paper-textured {
   background-color: var(--color-paper);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
   background-repeat: repeat;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-body);
   -webkit-tap-highlight-color: transparent;

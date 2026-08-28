@@ -16,22 +16,11 @@ function hoje() {
   return new Date().toISOString().slice(0, 10)
 }
 
-type TomCaixa = 'amber' | 'blue' | 'green' | 'red' | 'muted'
-
-const TOM_CAIXA_BG: Record<TomCaixa, string> = {
-  amber: 'bg-amber-light',
-  blue: 'bg-blue-light',
-  green: 'bg-green-light',
-  red: 'bg-red-light',
-  muted: 'bg-paper-sunken',
-}
-
-function CaixaPainel({ titulo, count, aberta, carregado, tom = 'muted', children }: {
+function CaixaPainel({ titulo, count, aberta, carregado, children }: {
   titulo: string
   count?: number
   aberta: boolean
   carregado: boolean
-  tom?: TomCaixa
   children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -44,15 +33,15 @@ function CaixaPainel({ titulo, count, aberta, carregado, tom = 'muted', children
   }, [carregado, aberta])
 
   return (
-    <Card className="overflow-hidden p-0">
-      <button onClick={() => setOpen((v) => !v)} className={`flex w-full items-center justify-between gap-2 p-4 text-left ${TOM_CAIXA_BG[tom]}`}>
+    <Card className="p-0">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between gap-2 p-4 text-left">
         <span className="text-[13px] font-bold">{titulo}</span>
         <div className="flex items-center gap-2">
           {!!count && <Pill tone="red" dot>{count}</Pill>}
           <IconChevron className={`h-4 w-4 flex-shrink-0 text-faint transition-transform ${open ? 'rotate-90' : ''}`} />
         </div>
       </button>
-      {open && <div className="border-t border-line bg-paper-raised p-4 pt-3">{children}</div>}
+      {open && <div className="border-t border-line p-4 pt-3">{children}</div>}
     </Card>
   )
 }
@@ -75,7 +64,7 @@ export default function Painel() {
             ['avaliacoes', 'Avaliações'],
           ] as [Sub, string][]
         ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-1 rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
             {label}
           </button>
         ))}
@@ -101,7 +90,7 @@ function Avaliacoes() {
             ['avaliativas', 'Atividade Avaliativa'],
           ] as [SubAvaliacoes, string][]
         ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'text-muted'}`}>
+          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
             {label}
           </button>
         ))}
@@ -126,7 +115,7 @@ function VisaoGeral() {
 
 function HistoricoBox() {
   return (
-    <CaixaPainel titulo="Histórico" aberta={false} carregado tom="muted">
+    <CaixaPainel titulo="Histórico" aberta={false} carregado>
       <Atividades />
     </CaixaPainel>
   )
@@ -164,7 +153,7 @@ function SubstitutaBox() {
   if (!substituto) return null
 
   return (
-    <CaixaPainel titulo="Professor(a) eventual" aberta={!!substituto.turmaAtualId} carregado={!!substitutos} tom="amber">
+    <CaixaPainel titulo="Professor(a) eventual" aberta={!!substituto.turmaAtualId} carregado={!!substitutos}>
       {substituto.turmaAtualId ? (
         <div className="flex items-center justify-between">
           <div>
@@ -196,7 +185,7 @@ function SaidasBox() {
   const nome = (id: string) => alunos?.find((a) => a.id === id)?.nome ?? '...'
 
   return (
-    <CaixaPainel titulo="Saídas antecipadas hoje" count={saidas?.length} aberta={!!saidas?.length} carregado={!!saidas} tom="blue">
+    <CaixaPainel titulo="Saídas antecipadas hoje" count={saidas?.length} aberta={!!saidas?.length} carregado={!!saidas}>
       {!saidas?.length ? (
         <EmptyState>Nenhuma saída antecipada avisada para hoje.</EmptyState>
       ) : (
@@ -230,7 +219,7 @@ function AchadosBox() {
   const pendentes = (achados ?? []).filter((a) => a.estado === 'reportado').length
 
   return (
-    <CaixaPainel titulo="Achados e Perdidos" count={pendentes} aberta={pendentes > 0} carregado={!!achados} tom="green">
+    <CaixaPainel titulo="Achados e Perdidos" count={pendentes} aberta={pendentes > 0} carregado={!!achados}>
       {!achados?.length ? (
         <EmptyState>Nenhum item reportado.</EmptyState>
       ) : (
@@ -285,7 +274,7 @@ function AtestadosBox() {
   }, [atestados])
 
   return (
-    <CaixaPainel titulo="Atestados" count={naoVistos.length} aberta={naoVistos.length > 0} carregado={!!atestados} tom="red">
+    <CaixaPainel titulo="Atestados" count={naoVistos.length} aberta={naoVistos.length > 0} carregado={!!atestados}>
       {!atestados?.length ? (
         <EmptyState>Nenhum atestado enviado ainda.</EmptyState>
       ) : (
