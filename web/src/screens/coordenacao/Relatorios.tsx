@@ -8,7 +8,17 @@ import type {
 import { Button, Card, EmptyState, Pill, SectionLabel, formatDateBR } from '../../components/ui'
 import { inputCls } from '../shared/formHelpers'
 
-type Sub = 'licoes' | 'presenca' | 'alimentacao' | 'passeios' | 'saude' | 'semanario'
+export type RelatoriosSub = 'licoes' | 'presenca' | 'alimentacao' | 'passeios' | 'saude' | 'semanario'
+type Sub = RelatoriosSub
+
+export const RELATORIOS_TABS: [RelatoriosSub, string][] = [
+  ['licoes', 'Lições'],
+  ['presenca', 'Presença'],
+  ['alimentacao', 'Alimentação'],
+  ['passeios', 'Passeios'],
+  ['saude', 'Saúde'],
+  ['semanario', 'Semanário'],
+]
 
 export interface Periodo {
   inicio: string
@@ -83,30 +93,12 @@ function TurmaPicker({ turmaId, onChange }: { turmaId: string; onChange: (t: str
   )
 }
 
-export default function Relatorios() {
-  const [sub, setSub] = useState<Sub>('licoes')
+export default function Relatorios({ sub }: { sub: Sub }) {
   const [periodo, setPeriodo] = useState<Periodo>(SEM_PERIODO)
   const [turmaId, setTurmaId] = useState('')
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1.5 overflow-x-auto rounded-xl bg-paper-sunken p-1">
-        {(
-          [
-            ['licoes', 'Lições'],
-            ['presenca', 'Presença'],
-            ['alimentacao', 'Alimentação'],
-            ['passeios', 'Passeios'],
-            ['saude', 'Saúde'],
-            ['semanario', 'Semanário'],
-          ] as [Sub, string][]
-        ).map(([key, label]) => (
-          <button key={key} onClick={() => setSub(key)} className={`flex-1 whitespace-nowrap rounded-lg border border-line px-2.5 py-2 text-[12.5px] font-bold ${sub === key ? 'bg-paper-raised text-ink shadow-sm' : 'bg-green-light text-muted'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
-
       <TurmaPicker turmaId={turmaId} onChange={setTurmaId} />
       <PeriodoPicker periodo={periodo} onChange={setPeriodo} />
 
