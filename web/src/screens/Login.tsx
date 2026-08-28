@@ -78,15 +78,17 @@ export default function Login() {
   }
 
   return (
-    <div className="bg-paper-textured flex min-h-dvh flex-col items-center justify-center px-6 py-10">
-      <div className="relative w-full max-w-[440px] overflow-hidden">
-        <Blob className="-left-[18%] -top-[6%] h-[45vw] max-h-[280px] w-[45vw] max-w-[280px] opacity-90" cor="var(--color-tab-sage)" path={BLOB_PATH_1} />
-        <Blob className="-right-[20%] -top-[3%] h-[36vw] max-h-[230px] w-[36vw] max-w-[230px] opacity-55" cor="var(--color-tab-mustard)" path={BLOB_PATH_2} />
-        <Blob className="-left-[16%] bottom-[24%] h-[33vw] max-h-[210px] w-[33vw] max-w-[210px] opacity-70" cor="var(--color-tab-terracotta)" path={BLOB_PATH_3} />
-        <Blob className="-bottom-[7%] -right-[14%] h-[47vw] max-h-[300px] w-[47vw] max-w-[300px] opacity-85" cor="var(--color-tab-blue)" path={BLOB_PATH_4} />
-        <Blob className="-right-[8%] top-[38%] h-[19vw] max-h-[120px] w-[19vw] max-w-[120px] opacity-40" cor="var(--color-tab-sage)" path={BLOB_PATH_5} />
+    <div className="bg-paper-textured relative min-h-dvh w-full overflow-hidden">
+      {/* Camada de fundo — cobre a viewport inteira, independente do tamanho do card */}
+      <Blob className="-left-[10vw] -top-[8vh] h-[42vh] max-h-[280px] w-[42vw] max-w-[280px] opacity-90" cor="var(--color-tab-sage)" path={BLOB_PATH_1} />
+      <Blob className="-right-[11vw] -top-[5vh] h-[34vh] max-h-[230px] w-[34vw] max-w-[230px] opacity-55" cor="var(--color-tab-mustard)" path={BLOB_PATH_2} />
+      <Blob className="-left-[9vw] bottom-[16vh] h-[31vh] max-h-[210px] w-[31vw] max-w-[210px] opacity-70" cor="var(--color-tab-terracotta)" path={BLOB_PATH_3} />
+      <Blob className="-bottom-[9vh] -right-[8vw] h-[44vh] max-h-[300px] w-[44vw] max-w-[300px] opacity-85" cor="var(--color-tab-blue)" path={BLOB_PATH_4} />
+      <Blob className="-right-[4vw] top-[42vh] h-[18vh] max-h-[120px] w-[18vw] max-w-[120px] opacity-40" cor="var(--color-tab-sage)" path={BLOB_PATH_5} />
 
-        <div className="relative flex flex-col items-center">
+      {/* Camada de conteúdo — centralizada, largura limitada; só o fundo preenche a tela toda */}
+      <div className="relative z-10 flex min-h-dvh w-full flex-col items-center justify-center px-6 py-10">
+        <div className="flex w-full max-w-[420px] flex-col items-center">
           <div className="mb-2.5 flex items-center gap-3 rounded-[18px] bg-navy py-3 pl-3 pr-5 shadow-[0_10px_24px_-8px_rgba(36,57,91,0.45)]">
             <div className="flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-xl bg-white">
               <span className="font-heading-painel text-[15px] font-bold text-navy">VB</span>
