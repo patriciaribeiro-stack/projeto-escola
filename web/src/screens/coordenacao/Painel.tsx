@@ -76,43 +76,6 @@ function CaixaPainel({
   )
 }
 
-function ResumoStrip() {
-  const { data: substitutos } = usePolling<Substituto[]>(async () => api.get('/substitutos'), 10000, [])
-  const { data: saidas } = usePolling<SaidaAntecipada[]>(async () => api.get(`/saidas-antecipadas${qs({ data: hoje() })}`), 8000, [])
-  const { data: achados } = usePolling<AchadoPerdido[]>(async () => api.get('/achados'), 6000, [])
-  const { data: atestados } = usePolling<Atestado[]>(async () => api.get('/atestados'), 8000, [])
-
-  const temSubstituicao = !!substitutos?.some((s) => s.turmaAtualId)
-  const totalSaidas = saidas?.length ?? 0
-  const achadosPendentes = (achados ?? []).filter((a) => a.estado === 'reportado').length
-  const atestadosPendentes = (atestados ?? []).filter((a) => !a.vistoPelaCoordenacaoEm).length
-  const total = (temSubstituicao ? 1 : 0) + totalSaidas + achadosPendentes + atestadosPendentes
-
-  const pontos = [
-    temSubstituicao && 'bg-tab-blue',
-    totalSaidas > 0 && 'bg-tab-blue',
-    achadosPendentes > 0 && 'bg-tab-sage',
-    atestadosPendentes > 0 && 'bg-alert',
-  ].filter((x): x is string => !!x)
-
-  return (
-    <div className="flex items-center gap-2.5 rounded-2xl bg-navy-deep px-4 py-3">
-      <p className="text-[13.5px] font-medium text-white/90">
-        {total > 0 ? (
-          <>Hoje você tem <span className="font-heading-painel font-semibold text-white">{total} {total === 1 ? 'pendência' : 'pendências'}</span></>
-        ) : (
-          <span className="font-heading-painel font-semibold text-white">Nenhuma pendência hoje</span>
-        )}
-      </p>
-      {!!pontos.length && (
-        <div className="ml-auto flex flex-shrink-0 gap-1">
-          {pontos.map((cor, i) => <span key={i} className={`h-[7px] w-[7px] rounded-full ${cor}`} />)}
-        </div>
-      )}
-    </div>
-  )
-}
-
 type Sub = 'visao' | 'eventos' | 'feeds' | 'avaliacoes'
 
 const PAINEL_TABS: TabOption<Sub>[] = [
@@ -129,7 +92,6 @@ export default function Painel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <ResumoStrip />
       <TabGroup tabs={PAINEL_TABS} value={sub} onChange={setSub} />
       {sub === 'visao' && <VisaoGeral />}
       {sub === 'eventos' && <Eventos />}
