@@ -16,9 +16,9 @@
 
 export type TabTom = 'blue' | 'terracotta' | 'sage' | 'mustard' | 'mauve'
 
-const TOM_CYCLE: TabTom[] = ['blue', 'terracotta', 'sage', 'mustard', 'mauve']
+export const TOM_CYCLE: TabTom[] = ['blue', 'terracotta', 'sage', 'mustard', 'mauve']
 
-const TOM_CLASSES: Record<TabTom, { dot: string; underline: string; tint: string; texto: string }> = {
+export const TOM_CLASSES: Record<TabTom, { dot: string; underline: string; tint: string; texto: string }> = {
   blue: { dot: 'bg-tab-blue', underline: 'border-tab-blue', tint: 'bg-tab-blue-tint', texto: 'text-tab-blue' },
   terracotta: { dot: 'bg-tab-terracotta', underline: 'border-tab-terracotta', tint: 'bg-tab-terracotta-tint', texto: 'text-tab-terracotta' },
   sage: { dot: 'bg-tab-sage', underline: 'border-tab-sage', tint: 'bg-tab-sage-tint', texto: 'text-tab-sage' },

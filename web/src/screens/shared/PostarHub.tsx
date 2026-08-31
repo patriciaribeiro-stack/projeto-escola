@@ -10,36 +10,37 @@ import { FormRelatorio } from './FormRelatorio'
 import { FormConteudoDia } from './FormConteudoDia'
 import { FormAtividadeAvaliativa } from './AtividadesAvaliativas'
 import { Field, Sucesso, inputCls } from './formHelpers'
+import { TOM_CLASSES, TOM_CYCLE } from '../../components/TabGroup'
 
 type Forma = 'licao' | 'foto' | 'relatorio' | 'conteudo' | 'aviso' | 'rotina' | 'ocorrencia' | 'avaliativa' | null
 
-type Secao = { titulo: string; opcoes: { key: Exclude<Forma, null>; label: string; sub: string; icon: typeof IconBook; tone: string }[] }
+type Secao = { titulo: string; opcoes: { key: Exclude<Forma, null>; label: string; sub: string; icon: typeof IconBook }[] }
 
 function construirSecoes(ehCoordenacao: boolean, ehFundamental: boolean, elegivelAvaliativa: boolean): Secao[] {
   const secoes: Secao[] = [
     {
       titulo: 'Comunicação com a turma',
       opcoes: [
-        { key: 'aviso' as const, label: 'Aviso geral', sub: 'Mural da turma', icon: IconBell, tone: 'text-red' },
-        { key: 'foto' as const, label: 'Foto da rotina', sub: 'Foto da turma', icon: IconCamera, tone: 'text-green' },
-        { key: 'licao' as const, label: 'Lição de casa', sub: 'Para toda a turma', icon: IconBook, tone: 'text-blue' },
+        { key: 'aviso' as const, label: 'Aviso geral', sub: 'Mural da turma', icon: IconBell },
+        { key: 'foto' as const, label: 'Foto da rotina', sub: 'Foto da turma', icon: IconCamera },
+        { key: 'licao' as const, label: 'Lição de casa', sub: 'Para toda a turma', icon: IconBook },
       ],
     },
     ehFundamental
       ? {
           titulo: 'O dia de hoje',
           opcoes: [
-            { key: 'conteudo' as const, label: 'Conteúdo do dia', sub: 'O que foi trabalhado, por matéria — enviado ao(s) responsável(is)', icon: IconEdit, tone: 'text-amber' },
+            { key: 'conteudo' as const, label: 'Conteúdo do dia', sub: 'O que foi trabalhado, por matéria — enviado ao(s) responsável(is)', icon: IconEdit },
             ...(elegivelAvaliativa
-              ? [{ key: 'avaliativa' as const, label: 'Atividade avaliativa', sub: 'Prova ou trabalho valendo nota — data, valor e conteúdo pra estudar', icon: IconChart, tone: 'text-red' }]
+              ? [{ key: 'avaliativa' as const, label: 'Atividade avaliativa', sub: 'Prova ou trabalho valendo nota — data, valor e conteúdo pra estudar', icon: IconChart }]
               : []),
           ],
         }
       : {
           titulo: 'Rotina do dia',
           opcoes: [
-            { key: 'rotina' as const, label: 'Rotina do dia', sub: 'Lanches, almoço, sono, higiene', icon: IconHome, tone: 'text-blue' },
-            { key: 'relatorio' as const, label: 'Relatório', sub: 'Resumo do dia e atividades — enviado ao(s) responsável(is)', icon: IconEdit, tone: 'text-amber' },
+            { key: 'rotina' as const, label: 'Rotina do dia', sub: 'Lanches, almoço, sono, higiene', icon: IconHome },
+            { key: 'relatorio' as const, label: 'Relatório', sub: 'Resumo do dia e atividades — enviado ao(s) responsável(is)', icon: IconEdit },
           ],
         },
   ]
@@ -47,7 +48,7 @@ function construirSecoes(ehCoordenacao: boolean, ehFundamental: boolean, elegive
     secoes.push({
       titulo: 'Sobre um aluno',
       opcoes: [
-        { key: 'ocorrencia' as const, label: 'Ocorrência geral', sub: 'Queda, item esquecido, comportamento — vai para aprovação da coordenação', icon: IconAlert, tone: 'text-amber' },
+        { key: 'ocorrencia' as const, label: 'Ocorrência geral', sub: 'Queda, item esquecido, comportamento — vai para aprovação da coordenação', icon: IconAlert },
       ],
     })
   }
@@ -69,24 +70,29 @@ export function PostarHub({ turmaId, alunos, autor, ehCoordenacao, ehFundamental
   const secoes = construirSecoes(!!ehCoordenacao, !!ehFundamental, !!elegivelAvaliativa)
 
   if (!forma) {
+    let indiceTom = 0
     return (
       <div className="flex flex-col gap-4">
         {secoes.map((secao) => (
           <div key={secao.titulo}>
             <SectionLabel>{secao.titulo}</SectionLabel>
             <div className="mt-2 flex flex-col gap-3">
-              {secao.opcoes.map((op) => (
-                <button key={op.key} onClick={() => setForma(op.key)} className="text-left">
-                  <Card className="flex items-center gap-3">
-                    <op.icon className={`h-5 w-5 flex-shrink-0 ${op.tone}`} />
-                    <span className="flex-1">
-                      <div className="text-[13.5px] font-bold">{op.label}</div>
-                      <div className="text-[11.5px] text-muted">{op.sub}</div>
-                    </span>
-                    <IconChevron className="h-4 w-4 text-faint" />
-                  </Card>
-                </button>
-              ))}
+              {secao.opcoes.map((op) => {
+                const tom = TOM_CLASSES[TOM_CYCLE[indiceTom++ % TOM_CYCLE.length]]
+                return (
+                  <button key={op.key} onClick={() => setForma(op.key)} className="text-left">
+                    <Card className="flex items-center gap-3">
+                      <span className={`h-[9px] w-[9px] flex-shrink-0 rounded-full ${tom.dot}`} />
+                      <op.icon className="h-5 w-5 flex-shrink-0 text-muted" />
+                      <span className="flex-1">
+                        <div className="text-[13.5px] font-bold">{op.label}</div>
+                        <div className="text-[11.5px] text-muted">{op.sub}</div>
+                      </span>
+                      <IconChevron className="h-4 w-4 text-faint" />
+                    </Card>
+                  </button>
+                )
+              })}
             </div>
           </div>
         ))}
