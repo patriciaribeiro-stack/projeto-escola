@@ -124,12 +124,12 @@ export function FichaResponsavelForm({ value, onChange }: { value: DadosFicha; o
 
       <p className={dividerCls}>Documento</p>
       <div className="flex gap-2">
-        <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="CPF" value={value.cpf} onChange={(e) => set('cpf', e.target.value)} />
-        <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="RG" value={value.rg} onChange={(e) => set('rg', e.target.value)} />
+        <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="CPF" value={value.cpf} onChange={(e) => set('cpf', e.target.value)} />
+        <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="RG" value={value.rg} onChange={(e) => set('rg', e.target.value)} />
       </div>
       <div className="flex gap-2">
-        <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Órgão emissor" value={value.orgaoEmissorRg} onChange={(e) => set('orgaoEmissorRg', e.target.value)} />
-        <input autoComplete="off" type="date" className={`${inputCls} flex-1`} placeholder="Data de emissão" value={value.dataEmissaoRg} onChange={(e) => set('dataEmissaoRg', e.target.value)} />
+        <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Órgão emissor" value={value.orgaoEmissorRg} onChange={(e) => set('orgaoEmissorRg', e.target.value)} />
+        <input autoComplete="off" type="date" className={`${inputCls} min-w-0 flex-1`} placeholder="Data de emissão" value={value.dataEmissaoRg} onChange={(e) => set('dataEmissaoRg', e.target.value)} />
       </div>
       <input autoComplete="off" className={inputCls} placeholder="Certidão de nascimento" value={value.certidaoNascimento} onChange={(e) => set('certidaoNascimento', e.target.value)} />
       <input autoComplete="off" type="email" className={inputCls} placeholder="E-mail" value={value.email} onChange={(e) => set('email', e.target.value)} />

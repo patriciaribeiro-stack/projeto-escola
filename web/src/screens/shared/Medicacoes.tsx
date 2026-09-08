@@ -69,7 +69,7 @@ export function FormNovaMedicacao({ alunoId, autor, onDone }: { alunoId: string;
         <div>
           <span className="text-[11px] font-bold uppercase tracking-wide text-faint">Horários de administração</span>
           <div className="mt-1.5 flex gap-2">
-            <input autoComplete="off" type="time" className={`${inputCls} flex-1`} value={horarioNovo} onChange={(e) => setHorarioNovo(e.target.value)} />
+            <input autoComplete="off" type="time" className={`${inputCls} min-w-0 flex-1`} value={horarioNovo} onChange={(e) => setHorarioNovo(e.target.value)} />
             <button type="button" onClick={adicionarHorario} className="whitespace-nowrap rounded-lg bg-paper-sunken px-3 text-[12px] font-bold text-ink">
               Adicionar
             </button>

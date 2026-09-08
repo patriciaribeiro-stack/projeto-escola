@@ -114,7 +114,7 @@ function EquipeSecao({
             <input autoComplete="off" className={inputCls} placeholder={dicaNome} value={nome} onChange={(e) => setNome(e.target.value)} />
             <input autoComplete="off" inputMode="numeric" className={inputCls} placeholder="Telefone (com DDD)" value={telefone} onChange={(e) => setTelefone(e.target.value.replace(/\D/g, ''))} />
             <div className="flex gap-2">
-              <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Senha inicial" value={senha} onChange={(e) => setSenha(e.target.value)} />
+              <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Senha inicial" value={senha} onChange={(e) => setSenha(e.target.value)} />
               <button type="button" onClick={() => setSenha(gerarSenhaAleatoria())} className="whitespace-nowrap rounded-lg bg-paper-sunken px-3 text-[12px] font-bold text-ink">
                 Gerar senha
               </button>

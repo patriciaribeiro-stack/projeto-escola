@@ -369,14 +369,14 @@ function SeletorTelefones({ telefones, onChange }: {
           <input
             autoComplete="off"
             inputMode="numeric"
-            className={`${inputCls} flex-1`}
+            className={`${inputCls} min-w-0 flex-1`}
             placeholder="Telefone (com DDD)"
             value={t.numero}
             onChange={(e) => atualizar(i, 'numero', e.target.value.replace(/\D/g, ''))}
           />
           <input
             autoComplete="off"
-            className={`${inputCls} flex-1`}
+            className={`${inputCls} min-w-0 flex-1`}
             placeholder="De quem é (ex: mãe marli)"
             value={t.etiqueta}
             onChange={(e) => atualizar(i, 'etiqueta', e.target.value)}
@@ -842,7 +842,7 @@ function AlunosCadastro() {
               <p className="rounded-lg bg-amber-light px-2.5 py-2 text-[12px] font-semibold text-amber">{avisoIdade}</p>
             )}
             <div className="flex gap-2">
-              <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Naturalidade" value={naturalidade} onChange={(e) => setNaturalidade(e.target.value)} />
+              <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Naturalidade" value={naturalidade} onChange={(e) => setNaturalidade(e.target.value)} />
               <input autoComplete="off" className={`${inputCls} w-16`} placeholder="UF" maxLength={2} value={uf} onChange={(e) => setUf(e.target.value.toUpperCase())} />
             </div>
             <input autoComplete="off" className={inputCls} placeholder="Nacionalidade" value={nacionalidade} onChange={(e) => setNacionalidade(e.target.value)} />
@@ -858,19 +858,19 @@ function AlunosCadastro() {
               <p className="text-[11px] text-faint">O número de chamada é calculado automaticamente pela ordem alfabética da turma.</p>
             )}
             <div className="flex gap-2">
-              <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="CPF" value={cpf} onChange={(e) => setCpf(e.target.value)} />
-              <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="RG" value={rg} onChange={(e) => setRg(e.target.value)} />
+              <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="CPF" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+              <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="RG" value={rg} onChange={(e) => setRg(e.target.value)} />
             </div>
             <div className="flex gap-2">
-              <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Órgão emissor" value={orgaoEmissorRg} onChange={(e) => setOrgaoEmissorRg(e.target.value)} />
-              <input autoComplete="off" type="date" className={`${inputCls} flex-1`} placeholder="Data de emissão" value={dataEmissaoRg} onChange={(e) => setDataEmissaoRg(e.target.value)} />
+              <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Órgão emissor" value={orgaoEmissorRg} onChange={(e) => setOrgaoEmissorRg(e.target.value)} />
+              <input autoComplete="off" type="date" className={`${inputCls} min-w-0 flex-1`} placeholder="Data de emissão" value={dataEmissaoRg} onChange={(e) => setDataEmissaoRg(e.target.value)} />
             </div>
             <input autoComplete="off" className={inputCls} placeholder="Certidão de nascimento" value={certidaoNascimento} onChange={(e) => setCertidaoNascimento(e.target.value)} />
 
             <p className={dividerCls}>Escola</p>
             <input autoComplete="off" className={inputCls} placeholder="Escolas anteriores" value={escolasAnteriores} onChange={(e) => setEscolasAnteriores(e.target.value)} />
             <div className="flex gap-2">
-              <input autoComplete="off" type="date" className={`${inputCls} flex-1`} placeholder="Início na escola" value={inicioNaEscola} onChange={(e) => setInicioNaEscola(e.target.value)} />
+              <input autoComplete="off" type="date" className={`${inputCls} min-w-0 flex-1`} placeholder="Início na escola" value={inicioNaEscola} onChange={(e) => setInicioNaEscola(e.target.value)} />
               <input autoComplete="off" inputMode="numeric" className={`${inputCls} w-32`} placeholder="Irmãos na escola" value={irmaosNaEscola} onChange={(e) => setIrmaosNaEscola(e.target.value.replace(/\D/g, ''))} />
             </div>
 
@@ -892,11 +892,11 @@ function AlunosCadastro() {
         <div className="mt-2.5 flex flex-col gap-2.5">
           <input autoComplete="off" className={inputCls} placeholder="Buscar por nome" value={buscaNome} onChange={(e) => { setBuscaNome(e.target.value); setPagina(0) }} />
           <div className="flex gap-2">
-            <select className={`${inputCls} flex-1`} value={filtroTurmaId} onChange={(e) => { setFiltroTurmaId(e.target.value); setPagina(0) }}>
+            <select className={`${inputCls} min-w-0 flex-1`} value={filtroTurmaId} onChange={(e) => { setFiltroTurmaId(e.target.value); setPagina(0) }}>
               <option value="">Todas as turmas</option>
               {turmas?.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
             </select>
-            <select className={`${inputCls} flex-1`} value={filtroPeriodo} onChange={(e) => { setFiltroPeriodo(e.target.value as Periodo | ''); setPagina(0) }}>
+            <select className={`${inputCls} min-w-0 flex-1`} value={filtroPeriodo} onChange={(e) => { setFiltroPeriodo(e.target.value as Periodo | ''); setPagina(0) }}>
               <option value="">Todos os períodos</option>
               <option value="integral">Integral</option>
               <option value="meio_periodo">Meio período</option>
@@ -1038,7 +1038,7 @@ function AcessoAlunoBloco({ aluno, onMudou, onCredencial }: {
         <div className="flex flex-col gap-2">
           <input autoComplete="off" className={inputCls} placeholder="Nome de usuário" value={login} onChange={(e) => setLogin(e.target.value)} />
           <div className="flex gap-2">
-            <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Senha inicial" value={senha} onChange={(e) => setSenha(e.target.value)} />
+            <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Senha inicial" value={senha} onChange={(e) => setSenha(e.target.value)} />
             <button type="button" onClick={() => setSenha(gerarSenhaAleatoria())} className="whitespace-nowrap rounded-lg bg-paper-sunken px-3 text-[12px] font-bold text-ink">
               Gerar senha
             </button>
@@ -1368,12 +1368,12 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
         <div className="mt-2.5 flex flex-col gap-2.5">
           <input autoComplete="off" className={inputCls} placeholder="Buscar por nome ou telefone" value={buscaPai} onChange={(e) => setBuscaPai(e.target.value)} />
           <div className="flex gap-2">
-            <select className={`${inputCls} flex-1`} value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value as typeof filtroStatus)}>
+            <select className={`${inputCls} min-w-0 flex-1`} value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value as typeof filtroStatus)}>
               <option value="">Todos os status</option>
               <option value="ativado">Ativado</option>
               <option value="aguardando">Ainda não entrou no app</option>
             </select>
-            <select className={`${inputCls} flex-1`} value={filtroFinanceiro} onChange={(e) => setFiltroFinanceiro(e.target.value as typeof filtroFinanceiro)}>
+            <select className={`${inputCls} min-w-0 flex-1`} value={filtroFinanceiro} onChange={(e) => setFiltroFinanceiro(e.target.value as typeof filtroFinanceiro)}>
               <option value="">Financeiro: todos</option>
               <option value="sim">Responsável financeiro</option>
               <option value="nao">Não é financeiro</option>
@@ -1568,7 +1568,7 @@ function ProfessoresCadastro({ filaImpressao, setFilaImpressao }: {
               <SeletorTurmasIntegral turmas={turmas} turmaIds={turmasIntegral} onToggle={alternarTurmaIntegral} />
             </div>
             <div className="flex gap-2">
-              <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Senha inicial" value={senha} onChange={(e) => setSenha(e.target.value)} />
+              <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Senha inicial" value={senha} onChange={(e) => setSenha(e.target.value)} />
               <button type="button" onClick={() => setSenha(gerarSenhaAleatoria())} className="whitespace-nowrap rounded-lg bg-paper-sunken px-3 text-[12px] font-bold text-ink">
                 Gerar senha
               </button>

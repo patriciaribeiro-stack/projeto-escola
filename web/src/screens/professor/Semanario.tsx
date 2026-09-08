@@ -316,7 +316,7 @@ function SemanarioFormEditavel({ semanario, turmaNome, onMudou }: {
         {dias.map((d, i) => (
           <Card key={d.id}>
             <div className="flex items-center gap-2">
-              <input autoComplete="off" type="date" className={`${inputCls} flex-1`} value={d.data} onChange={(e) => atualizarDia(d.id, { data: e.target.value })} />
+              <input autoComplete="off" type="date" className={`${inputCls} min-w-0 flex-1`} value={d.data} onChange={(e) => atualizarDia(d.id, { data: e.target.value })} />
               <button onClick={() => moverDia(d.id, -1)} disabled={i === 0} className="text-[16px] font-bold text-muted disabled:opacity-30">↑</button>
               <button onClick={() => moverDia(d.id, 1)} disabled={i === dias.length - 1} className="text-[16px] font-bold text-muted disabled:opacity-30">↓</button>
               <button onClick={() => removerDia(d.id)} className="text-[11.5px] font-bold text-red">Remover dia</button>

@@ -87,25 +87,25 @@ export function FichaMedicaForm({ value, onChange }: {
       <input autoComplete="off" className={inputCls} placeholder="Nome do plano" value={value.planoSaude.nome}
         onChange={(e) => set('planoSaude', { ...value.planoSaude, nome: e.target.value })} />
       <div className="flex gap-2">
-        <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Nº de inscrição" value={value.planoSaude.numeroInscricao}
+        <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Nº de inscrição" value={value.planoSaude.numeroInscricao}
           onChange={(e) => set('planoSaude', { ...value.planoSaude, numeroInscricao: e.target.value })} />
-        <input autoComplete="off" inputMode="numeric" className={`${inputCls} flex-1`} placeholder="Telefone" value={value.planoSaude.telefone}
+        <input autoComplete="off" inputMode="numeric" className={`${inputCls} min-w-0 flex-1`} placeholder="Telefone" value={value.planoSaude.telefone}
           onChange={(e) => set('planoSaude', { ...value.planoSaude, telefone: e.target.value.replace(/\D/g, '') })} />
       </div>
 
       <p className={dividerCls}>Médico de referência</p>
       <div className="flex gap-2">
-        <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Nome" value={value.medicoReferencia.nome}
+        <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Nome" value={value.medicoReferencia.nome}
           onChange={(e) => set('medicoReferencia', { ...value.medicoReferencia, nome: e.target.value })} />
-        <input autoComplete="off" inputMode="numeric" className={`${inputCls} flex-1`} placeholder="Telefone" value={value.medicoReferencia.telefone}
+        <input autoComplete="off" inputMode="numeric" className={`${inputCls} min-w-0 flex-1`} placeholder="Telefone" value={value.medicoReferencia.telefone}
           onChange={(e) => set('medicoReferencia', { ...value.medicoReferencia, telefone: e.target.value.replace(/\D/g, '') })} />
       </div>
 
       <p className={dividerCls}>Emergência</p>
       <div className="flex gap-2">
-        <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Contato preferencial (nome)" value={value.emergencia.nomeContato}
+        <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Contato preferencial (nome)" value={value.emergencia.nomeContato}
           onChange={(e) => set('emergencia', { ...value.emergencia, nomeContato: e.target.value })} />
-        <input autoComplete="off" inputMode="numeric" className={`${inputCls} flex-1`} placeholder="Telefone" value={value.emergencia.telefoneContato}
+        <input autoComplete="off" inputMode="numeric" className={`${inputCls} min-w-0 flex-1`} placeholder="Telefone" value={value.emergencia.telefoneContato}
           onChange={(e) => set('emergencia', { ...value.emergencia, telefoneContato: e.target.value.replace(/\D/g, '') })} />
       </div>
       <input autoComplete="off" className={inputCls} placeholder="Hospital / clínica de preferência" value={value.emergencia.hospitalPreferencia}

@@ -333,7 +333,7 @@ function TurmaDoDia({ turma, data, trimestre, criadoPor, materias, provas, mater
       </div>
       {!materiasDisponiveis.length ? null : (
         <div className="mt-2.5 flex gap-2">
-          <select className={`${inputCls} flex-1`} value={materiaId} onChange={(e) => setMateriaId(e.target.value)}>
+          <select className={`${inputCls} min-w-0 flex-1`} value={materiaId} onChange={(e) => setMateriaId(e.target.value)}>
             <option value="">+ adicionar matéria...</option>
             {materiasDisponiveis.map((m) => <option key={m.id} value={m.id}>{m.nome}</option>)}
           </select>

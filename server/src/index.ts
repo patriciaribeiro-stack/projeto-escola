@@ -180,7 +180,15 @@ const PERMISSOES: Record<string, RegraPermissao> = {
 
   // Cadastro de pessoas — exclusivo da secretaria, exceto o que é autoatendimento do próprio responsável
   'POST /api/alunos': ['secretaria'],
-  'PATCH /api/alunos/:id': ['secretaria'],
+  // Pai pode atualizar a ficha médica do próprio filho (autoatendimento) —
+  // qualquer outro campo (turma, dados de matrícula etc.) continua exclusivo da secretaria.
+  'PATCH /api/alunos/:id': (req, params) => {
+    if (req.sessao!.role === 'secretaria') return true
+    if (req.sessao!.role !== 'pai') return false
+    if (Object.keys(req.body).some((campo) => campo !== 'fichaMedica')) return false
+    const pai = db.data.pais.find((p) => p.id === req.sessao!.personaId)
+    return !!pai?.alunoIds.includes(params.id)
+  },
   'PATCH /api/alunos/:id/acesso': ['secretaria'],
   'PATCH /api/alunos/:id/responsaveis': ['secretaria'],
   'POST /api/alunos/marcar-vistos': ['coordenacao'],

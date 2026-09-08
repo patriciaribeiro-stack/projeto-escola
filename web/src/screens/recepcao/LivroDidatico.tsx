@@ -76,7 +76,7 @@ export default function LivroDidatico() {
         <SectionLabel>Configurar unidades do livro</SectionLabel>
         <div className="mt-2.5 flex flex-col gap-2.5">
           <div className="flex gap-2">
-            <select className={`${inputCls} flex-1`} value={materiaId} onChange={(e) => setMateriaId(e.target.value)}>
+            <select className={`${inputCls} min-w-0 flex-1`} value={materiaId} onChange={(e) => setMateriaId(e.target.value)}>
               <option value="">Matéria</option>
               {materias?.map((m) => <option key={m.id} value={m.id}>{m.nome}</option>)}
             </select>
@@ -107,11 +107,11 @@ export default function LivroDidatico() {
 
               <div className="flex gap-2">
                 <input autoComplete="off" inputMode="numeric" className={`${inputCls} w-20`} placeholder="Nº" value={numero} onChange={(e) => setNumero(e.target.value.replace(/\D/g, ''))} />
-                <input autoComplete="off" className={`${inputCls} flex-1`} placeholder="Título da unidade" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+                <input autoComplete="off" className={`${inputCls} min-w-0 flex-1`} placeholder="Título da unidade" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
               </div>
               <div className="flex gap-2">
-                <input autoComplete="off" inputMode="numeric" className={`${inputCls} flex-1`} placeholder="Página início (opcional)" value={paginaInicio} onChange={(e) => setPaginaInicio(e.target.value.replace(/\D/g, ''))} />
-                <input autoComplete="off" inputMode="numeric" className={`${inputCls} flex-1`} placeholder="Página fim (opcional)" value={paginaFim} onChange={(e) => setPaginaFim(e.target.value.replace(/\D/g, ''))} />
+                <input autoComplete="off" inputMode="numeric" className={`${inputCls} min-w-0 flex-1`} placeholder="Página início (opcional)" value={paginaInicio} onChange={(e) => setPaginaInicio(e.target.value.replace(/\D/g, ''))} />
+                <input autoComplete="off" inputMode="numeric" className={`${inputCls} min-w-0 flex-1`} placeholder="Página fim (opcional)" value={paginaFim} onChange={(e) => setPaginaFim(e.target.value.replace(/\D/g, ''))} />
               </div>
               <Button disabled={!numero || !titulo || salvando} onClick={adicionarUnidade}>{salvando ? 'Salvando...' : 'Adicionar unidade'}</Button>
             </>

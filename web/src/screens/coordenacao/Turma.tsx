@@ -129,11 +129,11 @@ function RelatoriosTexto() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-2">
-        <select className={`${inputCls} flex-1`} value={turmaId} onChange={(e) => setTurmaId(e.target.value)}>
+        <select className={`${inputCls} min-w-0 flex-1`} value={turmaId} onChange={(e) => setTurmaId(e.target.value)}>
           <option value="">Todas as turmas</option>
           {turmas?.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
         </select>
-        <input autoComplete="off" type="date" className={`${inputCls} flex-1`} value={dia} onChange={(e) => setDia(e.target.value)} />
+        <input autoComplete="off" type="date" className={`${inputCls} min-w-0 flex-1`} value={dia} onChange={(e) => setDia(e.target.value)} />
       </div>
       {(turmaId || dia) && (
         <button onClick={() => { setTurmaId(''); setDia('') }} className="self-start text-[11.5px] font-bold text-blue">
