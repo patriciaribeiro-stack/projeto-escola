@@ -6,6 +6,7 @@ import type { AchadoPerdido, Aluno, Atestado, SaidaAntecipada, Substituto, Turma
 import { Button, Card, EmptyState, formatDateBR, timeAgo } from '../../components/ui'
 import { IconChevron, IconUsers, IconClock, IconHeart, IconFileCheck, IconHistory } from '../../components/Icons'
 import { TabGroup, type TabOption } from '../../components/TabGroup'
+import { CodigosPendentes } from '../shared/CodigosPendentes'
 import { inputCls } from '../shared/formHelpers'
 import Feeds from './Feeds'
 import Atividades from './Atividades'
@@ -92,6 +93,7 @@ export default function Painel() {
 
   return (
     <div className="flex flex-col gap-4">
+      <CodigosPendentes />
       <TabGroup tabs={PAINEL_TABS} value={sub} onChange={setSub} />
       {sub === 'visao' && <VisaoGeral />}
       {sub === 'eventos' && <Eventos />}

@@ -574,6 +574,28 @@ app.post('/api/sessions/pai/entrar', async (req, res) => {
   res.json({ token, role: 'pai', personaId: pai.id, nome: pai.nome })
 })
 
+// PROVISÓRIO — enquanto o envio de WhatsApp de verdade não está ativo (ver
+// enviarCodigoWhatsApp), deixa a coordenação/secretaria ver o código pendente
+// de um telefone pra ditar por telefone/pessoalmente. Remover assim que a
+// Zenvia estiver integrada — ninguém deveria conseguir ver o código de outra
+// família, nem a própria coordenação, fora desse período de teste.
+app.get('/api/codigos-login-pendentes', async (req, res) => {
+  if (req.sessao!.role !== 'coordenacao' && req.sessao!.role !== 'secretaria') {
+    return res.status(403).json({ erro: 'Esse acesso não tem permissão para essa ação.' })
+  }
+  const agora = Date.now()
+  const pendentes = [...codigosLogin.entries()]
+    .filter(([, v]) => v.expiraEm > agora)
+    .map(([telefone, v]) => ({
+      telefone,
+      nome: db.data.pais.find((p) => p.telefone === telefone)?.nome ?? '...',
+      codigo: v.codigo,
+      expiraEmSegundos: Math.round((v.expiraEm - agora) / 1000),
+    }))
+    .sort((a, b) => b.expiraEmSegundos - a.expiraEmSegundos)
+  res.json(pendentes)
+})
+
 app.post('/api/sessions', async (req, res) => {
   const { telefone, senha } = req.body as { telefone?: string; senha?: string }
   if (!telefone || !senha) return res.status(400).json({ erro: 'telefone e senha são obrigatórios' })

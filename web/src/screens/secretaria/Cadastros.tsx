@@ -3,6 +3,7 @@ import { CadastrosPessoas } from '../shared/CadastrosPessoas'
 import { CadastrosEscola } from '../shared/CadastrosEscola'
 import { CadastrosEquipe } from '../shared/CadastrosEquipe'
 import { CardapioCadastro } from '../shared/CadastroCardapio'
+import { CodigosPendentes } from '../shared/CodigosPendentes'
 import { TabGroup, type TabOption } from '../../components/TabGroup'
 
 type Sub = 'pessoas' | 'escola' | 'cardapio' | 'equipe'
@@ -18,6 +19,7 @@ export default function Cadastros() {
   const [sub, setSub] = useState<Sub>('pessoas')
   return (
     <div className="flex flex-col gap-4">
+      <CodigosPendentes />
       <TabGroup tabs={TABS} value={sub} onChange={setSub} />
       {sub === 'pessoas' && <CadastrosPessoas />}
       {sub === 'escola' && <CadastrosEscola />}
