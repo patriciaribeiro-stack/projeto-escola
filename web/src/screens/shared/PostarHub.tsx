@@ -143,6 +143,7 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
   const [entrega, setEntrega] = useState(new Date().toISOString().slice(0, 10))
   const [anexo, setAnexo] = useState<{ nome: string; tipo: string; dataUrl: string } | null>(null)
   const [erroAnexo, setErroAnexo] = useState('')
+  const [erro, setErro] = useState('')
   const [aceitaEntregaPdf, setAceitaEntregaPdf] = useState(true)
   const [ok, setOk] = useState(false)
   const [publicando, setPublicando] = useState(false)
@@ -166,6 +167,7 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
   }
 
   async function publicar() {
+    setErro('')
     setPublicando(true)
     try {
       await api.post('/licoes', {
@@ -182,6 +184,8 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
       })
       setOk(true)
       setTimeout(onDone, 1200)
+    } catch (e) {
+      setErro((e as Error).message)
     } finally {
       setPublicando(false)
     }
@@ -241,6 +245,7 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
         <input autoComplete="off" type="checkbox" checked={aceitaEntregaPdf} onChange={(e) => setAceitaEntregaPdf(e.target.checked)} />
         Aceita entrega em PDF (o aluno poderá anexar o PDF feito)
       </label>
+      {erro && <p className="text-[11.5px] font-semibold text-red">{erro}</p>}
       <Button disabled={!titulo || !descricao || publicando || (!!materias.length && !materiaId)} onClick={publicar}>
         {publicando ? 'Publicando...' : 'Publicar para a turma'}
       </Button>
@@ -290,6 +295,7 @@ export function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: s
 
   async function publicar() {
     if (!fotos.length) return
+    setErro('')
     setPublicando(true)
     try {
       await api.post('/fotos', {
@@ -300,6 +306,8 @@ export function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: s
       })
       setOk(true)
       setTimeout(onDone, 1200)
+    } catch (e) {
+      setErro((e as Error).message)
     } finally {
       setPublicando(false)
     }
@@ -351,11 +359,21 @@ export function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: s
 function FormAviso({ turmaId, autor, onDone }: { turmaId: string; autor: string; onDone: () => void }) {
   const [texto, setTexto] = useState('')
   const [ok, setOk] = useState(false)
+  const [erro, setErro] = useState('')
+  const [publicando, setPublicando] = useState(false)
 
   async function publicar() {
-    await api.post('/avisos', { turmaId, autor, texto })
-    setOk(true)
-    setTimeout(onDone, 1200)
+    setErro('')
+    setPublicando(true)
+    try {
+      await api.post('/avisos', { turmaId, autor, texto })
+      setOk(true)
+      setTimeout(onDone, 1200)
+    } catch (e) {
+      setErro((e as Error).message)
+    } finally {
+      setPublicando(false)
+    }
   }
 
   if (ok) return <Sucesso>Aviso publicado no mural da turma.</Sucesso>
@@ -363,7 +381,8 @@ function FormAviso({ turmaId, autor, onDone }: { turmaId: string; autor: string;
   return (
     <div className="flex flex-col gap-3">
       <Field label="Mensagem"><textarea autoComplete="off" className={inputCls} rows={4} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ex: Passeio confirmado para sexta-feira" /></Field>
-      <Button disabled={!texto} onClick={publicar}>Publicar aviso</Button>
+      {erro && <p className="text-[11.5px] font-semibold text-red">{erro}</p>}
+      <Button disabled={!texto || publicando} onClick={publicar}>{publicando ? 'Publicando...' : 'Publicar aviso'}</Button>
     </div>
   )
 }
@@ -374,13 +393,17 @@ function FormOcorrencia({ turmaId, alunos, autor, onDone }: { turmaId: string; a
   const [descricao, setDescricao] = useState('')
   const [ok, setOk] = useState(false)
   const [enviando, setEnviando] = useState(false)
+  const [erro, setErro] = useState('')
 
   async function registrar() {
+    setErro('')
     setEnviando(true)
     try {
       await api.post('/ocorrencias-gerais', { alunoId, turmaId, titulo, descricao, registradoPor: autor })
       setOk(true)
       setTimeout(onDone, 1200)
+    } catch (e) {
+      setErro((e as Error).message)
     } finally {
       setEnviando(false)
     }
@@ -397,6 +420,7 @@ function FormOcorrencia({ turmaId, alunos, autor, onDone }: { turmaId: string; a
       </Field>
       <Field label="Título"><input autoComplete="off" className={inputCls} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ex: não trouxe o material, briga no recreio" /></Field>
       <Field label="Descrição"><textarea autoComplete="off" className={inputCls} rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="O que aconteceu" /></Field>
+      {erro && <p className="text-[11.5px] font-semibold text-red">{erro}</p>}
       <Button disabled={!alunoId || !titulo || !descricao || enviando} onClick={registrar}>
         {enviando ? 'Enviando...' : 'Enviar para aprovação da coordenação'}
       </Button>
