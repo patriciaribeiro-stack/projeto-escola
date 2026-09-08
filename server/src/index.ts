@@ -27,6 +27,21 @@ function semSenha<T extends { senhaHash?: string | null }>(item: T) {
   return resto
 }
 
+// Login dos pais por código enviado no WhatsApp (em vez de senha) — o número
+// já vem cadastrado pela secretaria, então só quem tem esse aparelho entra.
+// Guardado em memória (não no db.json): é um segredo de curtíssima duração,
+// não faz sentido persistir nem sobrevive a um restart do servidor.
+const CODIGO_LOGIN_VALIDADE_MS = 5 * 60_000
+const CODIGO_LOGIN_REENVIO_MS = 30_000
+const CODIGO_LOGIN_MAX_TENTATIVAS = 5
+const codigosLogin = new Map<string, { codigo: string; expiraEm: number; tentativas: number; enviadoEm: number }>()
+
+// TODO: trocar pela chamada real à API de WhatsApp (Zenvia) assim que a conta
+// estiver aprovada — por enquanto só loga no console pra testar o fluxo.
+async function enviarCodigoWhatsApp(telefone: string, codigo: string) {
+  console.log(`[WhatsApp simulado] Código de login para ${telefone}: ${codigo}`)
+}
+
 // Prazo até a coordenação ser avisada automaticamente se ninguém responder.
 const LEMBRETE_MS = 5 * 60_000
 const ESCALONA_MS = 10 * 60_000
@@ -495,21 +510,84 @@ app.use((req, res, next) => {
   next()
 })
 
+// Identifica de quem é o telefone e diz ao app se deve pedir senha (equipe)
+// ou já manda o código de login pelo WhatsApp (pais — ver /api/sessions/pai/entrar).
+app.post('/api/sessions/telefone', async (req, res) => {
+  const { telefone } = req.body as { telefone?: string }
+  if (!telefone) return res.status(400).json({ erro: 'telefone é obrigatório' })
+
+  const pai = db.data.pais.find((p) => p.telefone === telefone)
+  if (pai) {
+    const pendente = codigosLogin.get(telefone)
+    if (pendente && Date.now() - pendente.enviadoEm < CODIGO_LOGIN_REENVIO_MS) {
+      const restam = Math.ceil((CODIGO_LOGIN_REENVIO_MS - (Date.now() - pendente.enviadoEm)) / 1000)
+      return res.status(429).json({ erro: `Aguarde ${restam}s para pedir outro código.` })
+    }
+    const codigo = gerarCodigoAcesso()
+    codigosLogin.set(telefone, { codigo, expiraEm: Date.now() + CODIGO_LOGIN_VALIDADE_MS, tentativas: 0, enviadoEm: Date.now() })
+    await enviarCodigoWhatsApp(telefone, codigo)
+    return res.json({ modo: 'codigo' })
+  }
+
+  const encontrado =
+    db.data.professores.some((p) => p.telefone === telefone) ||
+    db.data.coordenadores.some((c) => c.telefone === telefone) ||
+    db.data.secretarios.some((s) => s.telefone === telefone) ||
+    db.data.recepcionistas.some((r) => r.telefone === telefone) ||
+    db.data.monitoresIntegral.some((m) => m.telefone === telefone) ||
+    db.data.substitutos.some((s) => s.telefone === telefone) ||
+    db.data.alunos.some((a) => a.login === telefone)
+
+  if (!encontrado) return res.status(404).json({ erro: 'Telefone não encontrado. Procure a secretaria.' })
+  res.json({ modo: 'senha' })
+})
+
+// Confirma o código de WhatsApp e cria a sessão do pai — substitui telefone+senha.
+app.post('/api/sessions/pai/entrar', async (req, res) => {
+  const { telefone, codigo } = req.body as { telefone?: string; codigo?: string }
+  if (!telefone || !codigo) return res.status(400).json({ erro: 'telefone e código são obrigatórios' })
+
+  const pendente = codigosLogin.get(telefone)
+  if (!pendente) return res.status(400).json({ erro: 'Peça um código antes de entrar.' })
+  if (Date.now() > pendente.expiraEm) {
+    codigosLogin.delete(telefone)
+    return res.status(400).json({ erro: 'Código expirado. Peça um novo.' })
+  }
+  if (pendente.codigo !== codigo) {
+    pendente.tentativas += 1
+    if (pendente.tentativas >= CODIGO_LOGIN_MAX_TENTATIVAS) {
+      codigosLogin.delete(telefone)
+      return res.status(400).json({ erro: 'Muitas tentativas erradas. Peça um novo código.' })
+    }
+    return res.status(400).json({ erro: 'Código incorreto.' })
+  }
+
+  const pai = db.data.pais.find((p) => p.telefone === telefone)
+  if (!pai) return res.status(400).json({ erro: 'Telefone não encontrado.' })
+  codigosLogin.delete(telefone)
+
+  const token = gerarToken()
+  db.data.sessoesAtivas.push({ token, role: 'pai', personaId: pai.id, criadoEm: now() })
+  db.data.acessos.unshift({ id: id(), nome: pai.nome, papel: 'pai', horario: now() })
+  db.data.atividades.unshift({ id: id(), quando: now(), role: 'pai', personaId: pai.id, nome: pai.nome, metodo: 'POST', rota: '/api/sessions/pai/entrar', resumo: 'Entrou no sistema' })
+  await db.write()
+  res.json({ token, role: 'pai', personaId: pai.id, nome: pai.nome })
+})
+
 app.post('/api/sessions', async (req, res) => {
   const { telefone, senha } = req.body as { telefone?: string; senha?: string }
   if (!telefone || !senha) return res.status(400).json({ erro: 'telefone e senha são obrigatórios' })
 
-  const pai = db.data.pais.find((p) => p.telefone === telefone)
-  const professor = !pai ? db.data.professores.find((p) => p.telefone === telefone) : undefined
-  const coordenador = !pai && !professor ? db.data.coordenadores.find((c) => c.telefone === telefone) : undefined
-  const secretario = !pai && !professor && !coordenador ? db.data.secretarios.find((s) => s.telefone === telefone) : undefined
-  const recepcionista = !pai && !professor && !coordenador && !secretario
+  const professor = db.data.professores.find((p) => p.telefone === telefone)
+  const coordenador = !professor ? db.data.coordenadores.find((c) => c.telefone === telefone) : undefined
+  const secretario = !professor && !coordenador ? db.data.secretarios.find((s) => s.telefone === telefone) : undefined
+  const recepcionista = !professor && !coordenador && !secretario
     ? db.data.recepcionistas.find((r) => r.telefone === telefone) : undefined
-  const monitorIntegral = !pai && !professor && !coordenador && !secretario && !recepcionista
+  const monitorIntegral = !professor && !coordenador && !secretario && !recepcionista
     ? db.data.monitoresIntegral.find((m) => m.telefone === telefone) : undefined
-  const substituto = !pai && !professor && !coordenador && !secretario && !recepcionista && !monitorIntegral
+  const substituto = !professor && !coordenador && !secretario && !recepcionista && !monitorIntegral
     ? db.data.substitutos.find((s) => s.telefone === telefone) : undefined
-  const aluno = !pai && !professor && !coordenador && !secretario && !recepcionista && !monitorIntegral && !substituto
+  const aluno = !professor && !coordenador && !secretario && !recepcionista && !monitorIntegral && !substituto
     ? db.data.alunos.find((a) => a.login === telefone) : undefined
 
   if (professor?.bloqueadoEm || coordenador?.bloqueadoEm || secretario?.bloqueadoEm || recepcionista?.bloqueadoEm || monitorIntegral?.bloqueadoEm || substituto?.bloqueadoEm || aluno?.bloqueadoEm) {
@@ -520,8 +598,7 @@ app.post('/api/sessions', async (req, res) => {
   let personaId = ''
   let nome = ''
   let senhaHash: string | null = null
-  if (pai) { role = 'pai'; personaId = pai.id; nome = pai.nome; senhaHash = pai.senhaHash }
-  else if (professor) { role = 'professor'; personaId = professor.id; nome = professor.nome; senhaHash = professor.senhaHash }
+  if (professor) { role = 'professor'; personaId = professor.id; nome = professor.nome; senhaHash = professor.senhaHash }
   else if (coordenador) { role = 'coordenacao'; personaId = coordenador.id; nome = coordenador.nome; senhaHash = coordenador.senhaHash }
   else if (secretario) { role = 'secretaria'; personaId = secretario.id; nome = secretario.nome; senhaHash = secretario.senhaHash }
   else if (recepcionista) { role = 'recepcao'; personaId = recepcionista.id; nome = recepcionista.nome; senhaHash = recepcionista.senhaHash }

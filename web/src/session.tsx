@@ -21,6 +21,8 @@ interface SessionContextValue {
   selecionarFilho: (id: string) => void
   login: (telefone: string, senha: string) => Promise<Session>
   ativar: (telefone: string, codigoAcesso: string, senha: string) => Promise<Session>
+  identificarTelefone: (telefone: string) => Promise<{ modo: 'senha' | 'codigo' }>
+  entrarComCodigo: (telefone: string, codigo: string) => Promise<Session>
   logout: () => void
   refreshPai: () => Promise<void>
   loadingDetail: boolean
@@ -98,6 +100,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return result
   }
 
+  const identificarTelefone = async (telefone: string) => {
+    return api.post<{ modo: 'senha' | 'codigo' }>('/sessions/telefone', { telefone })
+  }
+
+  const entrarComCodigo = async (telefone: string, codigo: string) => {
+    const result = await api.post<Session>('/sessions/pai/entrar', { telefone, codigo })
+    salvarSessao(result)
+    return result
+  }
+
   const logout = () => {
     api.post('/sessions/logout').catch(() => {})
     localStorage.removeItem(SESSION_STORAGE_KEY)
@@ -108,7 +120,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     () => ({
       session, pai, professor, substituto, alunoLogado, nomeAutor, aluno, filhos,
       selecionarFilho: setAlunoAtivoId,
-      login, ativar, logout, refreshPai: loadDetail, loadingDetail,
+      login, ativar, identificarTelefone, entrarComCodigo, logout, refreshPai: loadDetail, loadingDetail,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [session, pai, professor, substituto, alunoLogado, nomeAutor, aluno, filhos, loadingDetail],

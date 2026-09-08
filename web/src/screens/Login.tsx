@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '../session'
 import type { Role } from '../types'
@@ -34,20 +34,63 @@ const roleHome: Record<Role, string> = {
 }
 
 const inputCls = 'rounded-xl border border-line bg-paper-raised px-3.5 py-3 text-[14px] outline-none focus:border-blue'
+const REENVIO_SEGUNDOS = 30
 
-type Modo = 'entrar' | 'ativar'
+type Etapa = 'telefone' | 'senha' | 'codigo'
 
 export default function Login() {
-  const [modo, setModo] = useState<Modo>('entrar')
-  const { login, ativar } = useSession()
+  const [etapa, setEtapa] = useState<Etapa>('telefone')
+  const { login, identificarTelefone, entrarComCodigo } = useSession()
   const navigate = useNavigate()
 
   const [telefone, setTelefone] = useState('')
   const [senha, setSenha] = useState('')
-  const [codigoAcesso, setCodigoAcesso] = useState('')
-  const [confirmarSenha, setConfirmarSenha] = useState('')
+  const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const [reenvioEm, setReenvioEm] = useState(0)
+
+  function voltarParaTelefone() {
+    setEtapa('telefone')
+    setSenha('')
+    setCodigo('')
+    setErro('')
+  }
+
+  async function continuar() {
+    setErro('')
+    setEnviando(true)
+    try {
+      const { modo } = await identificarTelefone(telefone)
+      if (modo === 'codigo') {
+        setEtapa('codigo')
+        setReenvioEm(REENVIO_SEGUNDOS)
+      } else {
+        setEtapa('senha')
+      }
+    } catch (e) {
+      setErro((e as Error).message)
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  async function reenviarCodigo() {
+    if (reenvioEm > 0) return
+    setErro('')
+    try {
+      await identificarTelefone(telefone)
+      setReenvioEm(REENVIO_SEGUNDOS)
+    } catch (e) {
+      setErro((e as Error).message)
+    }
+  }
+
+  useEffect(() => {
+    if (reenvioEm <= 0) return
+    const t = setInterval(() => setReenvioEm((s) => s - 1), 1000)
+    return () => clearInterval(t)
+  }, [reenvioEm])
 
   async function entrar() {
     setErro('')
@@ -62,14 +105,12 @@ export default function Login() {
     }
   }
 
-  async function ativarConta() {
+  async function entrarComCodigoRecebido() {
     setErro('')
-    if (senha.length < 6) return setErro('A senha precisa ter pelo menos 6 caracteres.')
-    if (senha !== confirmarSenha) return setErro('As senhas não coincidem.')
     setEnviando(true)
     try {
-      await ativar(telefone, codigoAcesso, senha)
-      navigate(roleHome.pai)
+      const result = await entrarComCodigo(telefone, codigo)
+      navigate(roleHome[result.role])
     } catch (e) {
       setErro((e as Error).message)
     } finally {
@@ -102,46 +143,36 @@ export default function Login() {
           </div>
 
           <div className="flex w-full flex-col gap-3 rounded-[22px] border border-line bg-paper-raised px-5 py-6 shadow-[0_20px_40px_-16px_rgba(36,57,91,0.18)]">
-            <label className="flex flex-col gap-1.5">
-              <span className="pl-0.5 text-[11.5px] font-semibold text-muted">Telefone ou nome de acesso</span>
-              <input
-                autoComplete="off"
-                className={inputCls}
-                placeholder="Digite aqui"
-                value={telefone}
-                onChange={(e) => setTelefone(e.target.value)}
-              />
-            </label>
-
-            {modo === 'entrar' && (
-              <label className="flex flex-col gap-1.5">
-                <span className="pl-0.5 text-[11.5px] font-semibold text-muted">Senha</span>
-                <input
-                  autoComplete="off"
-                  type="password"
-                  className={inputCls}
-                  placeholder="Digite aqui"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                />
-              </label>
-            )}
-
-            {modo === 'ativar' && (
+            {etapa === 'telefone' && (
               <>
                 <label className="flex flex-col gap-1.5">
-                  <span className="pl-0.5 text-[11.5px] font-semibold text-muted">Código de matrícula</span>
+                  <span className="pl-0.5 text-[11.5px] font-semibold text-muted">Telefone ou nome de acesso</span>
                   <input
                     autoComplete="off"
-                    inputMode="numeric"
                     className={inputCls}
                     placeholder="Digite aqui"
-                    value={codigoAcesso}
-                    onChange={(e) => setCodigoAcesso(e.target.value.replace(/\D/g, ''))}
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && continuar()}
                   />
                 </label>
+
+                {erro && <p className="text-[12.5px] font-semibold text-red">{erro}</p>}
+
+                <Button
+                  className="bg-tab-blue font-heading-painel shadow-[0_10px_20px_-8px_rgba(78,127,176,0.55)] active:bg-tab-blue"
+                  disabled={enviando || !telefone}
+                  onClick={continuar}
+                >
+                  {enviando ? 'Aguarde...' : 'Continuar'}
+                </Button>
+              </>
+            )}
+
+            {etapa === 'senha' && (
+              <>
                 <label className="flex flex-col gap-1.5">
-                  <span className="pl-0.5 text-[11.5px] font-semibold text-muted">Escolha uma senha (mín. 6 caracteres)</span>
+                  <span className="pl-0.5 text-[11.5px] font-semibold text-muted">Senha</span>
                   <input
                     autoComplete="off"
                     type="password"
@@ -149,44 +180,71 @@ export default function Login() {
                     placeholder="Digite aqui"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && entrar()}
+                    autoFocus
                   />
                 </label>
-                <label className="flex flex-col gap-1.5">
-                  <span className="pl-0.5 text-[11.5px] font-semibold text-muted">Confirme a senha</span>
-                  <input
-                    autoComplete="off"
-                    type="password"
-                    className={inputCls}
-                    placeholder="Digite aqui"
-                    value={confirmarSenha}
-                    onChange={(e) => setConfirmarSenha(e.target.value)}
-                  />
-                </label>
+
+                {erro && <p className="text-[12.5px] font-semibold text-red">{erro}</p>}
+
+                <Button
+                  className="bg-tab-blue font-heading-painel shadow-[0_10px_20px_-8px_rgba(78,127,176,0.55)] active:bg-tab-blue"
+                  disabled={enviando || !senha}
+                  onClick={entrar}
+                >
+                  {enviando ? 'Aguarde...' : 'Entrar'}
+                </Button>
+
+                <button type="button" onClick={voltarParaTelefone} className="mt-1 text-center text-[13.5px] font-semibold text-tab-blue">
+                  ← Trocar número
+                </button>
               </>
             )}
 
-            {erro && <p className="text-[12.5px] font-semibold text-red">{erro}</p>}
+            {etapa === 'codigo' && (
+              <>
+                <p className="text-[13px] text-muted">
+                  Enviamos um código pelo WhatsApp para <span className="font-semibold text-ink">{telefone}</span>.
+                </p>
+                <label className="flex flex-col gap-1.5">
+                  <span className="pl-0.5 text-[11.5px] font-semibold text-muted">Código recebido</span>
+                  <input
+                    autoComplete="off"
+                    inputMode="numeric"
+                    className={inputCls}
+                    placeholder="Digite aqui"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
+                    onKeyDown={(e) => e.key === 'Enter' && entrarComCodigoRecebido()}
+                    autoFocus
+                  />
+                </label>
 
-            <Button
-              className="bg-tab-blue font-heading-painel shadow-[0_10px_20px_-8px_rgba(78,127,176,0.55)] active:bg-tab-blue"
-              disabled={enviando || !telefone || !senha || (modo === 'ativar' && (!codigoAcesso || !confirmarSenha))}
-              onClick={modo === 'entrar' ? entrar : ativarConta}
-            >
-              {enviando ? 'Aguarde...' : modo === 'entrar' ? 'Entrar' : 'Ativar acesso'}
-            </Button>
+                {erro && <p className="text-[12.5px] font-semibold text-red">{erro}</p>}
 
-            <button
-              type="button"
-              onClick={() => {
-                setModo(modo === 'entrar' ? 'ativar' : 'entrar')
-                setErro('')
-                setSenha('')
-                setConfirmarSenha('')
-              }}
-              className="mt-1 text-center text-[13.5px] font-semibold text-tab-blue"
-            >
-              {modo === 'entrar' ? 'Recebi um código de matrícula da escola' : '← Já tenho senha, voltar ao login'}
-            </button>
+                <Button
+                  className="bg-tab-blue font-heading-painel shadow-[0_10px_20px_-8px_rgba(78,127,176,0.55)] active:bg-tab-blue"
+                  disabled={enviando || !codigo}
+                  onClick={entrarComCodigoRecebido}
+                >
+                  {enviando ? 'Aguarde...' : 'Entrar'}
+                </Button>
+
+                <div className="mt-1 flex items-center justify-between">
+                  <button type="button" onClick={voltarParaTelefone} className="text-[13.5px] font-semibold text-tab-blue">
+                    ← Trocar número
+                  </button>
+                  <button
+                    type="button"
+                    onClick={reenviarCodigo}
+                    disabled={reenvioEm > 0}
+                    className="text-[13.5px] font-semibold text-tab-blue disabled:text-faint"
+                  >
+                    {reenvioEm > 0 ? `Reenviar em ${reenvioEm}s` : 'Reenviar código'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           <p className="mt-6 text-center text-[11.5px] text-muted opacity-70">Ano letivo 2026</p>
