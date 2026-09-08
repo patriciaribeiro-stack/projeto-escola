@@ -316,8 +316,8 @@ const PERMISSOES: Record<string, RegraPermissao> = {
   'PATCH /api/achados/:id': ['coordenacao'],
 
   // Cardápio do almoço — secretaria e recepção
-  'POST /api/cardapio': ['secretaria', 'recepcao'],
-  'DELETE /api/cardapio/:id': ['secretaria', 'recepcao'],
+  'POST /api/cardapio': ['recepcao'],
+  'DELETE /api/cardapio/:id': ['recepcao'],
 
   // Presença e relatórios de turma — quem dá aula
   'POST /api/presencas/bulk': ['professor', 'substituto'],

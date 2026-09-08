@@ -2,16 +2,14 @@ import { useState } from 'react'
 import { CadastrosPessoas } from '../shared/CadastrosPessoas'
 import { CadastrosEscola } from '../shared/CadastrosEscola'
 import { CadastrosEquipe } from '../shared/CadastrosEquipe'
-import { CardapioCadastro } from '../shared/CadastroCardapio'
 import { CodigosPendentes } from '../shared/CodigosPendentes'
 import { TabGroup, type TabOption } from '../../components/TabGroup'
 
-type Sub = 'pessoas' | 'escola' | 'cardapio' | 'equipe'
+type Sub = 'pessoas' | 'escola' | 'equipe'
 
 const TABS: TabOption<Sub>[] = [
   { key: 'pessoas', label: 'Alunos e responsáveis' },
   { key: 'escola', label: 'Turmas' },
-  { key: 'cardapio', label: 'Cardápio' },
   { key: 'equipe', label: 'Acessos' },
 ]
 
@@ -23,7 +21,6 @@ export default function Cadastros() {
       <TabGroup tabs={TABS} value={sub} onChange={setSub} />
       {sub === 'pessoas' && <CadastrosPessoas />}
       {sub === 'escola' && <CadastrosEscola />}
-      {sub === 'cardapio' && <CardapioCadastro />}
       {sub === 'equipe' && <CadastrosEquipe />}
     </div>
   )
