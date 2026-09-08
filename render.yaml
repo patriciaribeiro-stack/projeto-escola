@@ -3,8 +3,8 @@ services:
     name: projeto-escola
     runtime: node
     plan: starter
-    buildCommand: cd web && npm install && npm run build && cd ../server && npm install && npm run bootstrap
-    startCommand: cd server && npm start
+    buildCommand: cd web && npm install && npm run build && cd ../server && npm install
+    startCommand: cd server && npm run bootstrap && npm start
     disk:
       name: dados
       mountPath: /var/data
