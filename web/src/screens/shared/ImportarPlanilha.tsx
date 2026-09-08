@@ -142,10 +142,13 @@ export function ImportarPlanilha({ turmas, pais, alunos, onDone }: {
   const [importando, setImportando] = useState(false)
   const [resultado, setResultado] = useState<string | null>(null)
   const [erroArquivo, setErroArquivo] = useState<string | null>(null)
+  const [falhasImportacao, setFalhasImportacao] = useState<string[]>([])
 
   function processarArquivo(file: File) {
     setErroArquivo(null)
     setAlunosProcessados(null)
+    setResultado(null)
+    setFalhasImportacao([])
     if (!file.name.toLowerCase().endsWith('.csv')) {
       setErroArquivo(`"${file.name}" não é um arquivo CSV. Abra no Excel e use "Salvar como" → CSV antes de subir aqui.`)
       return
@@ -273,6 +276,7 @@ export function ImportarPlanilha({ turmas, pais, alunos, onDone }: {
 
   async function confirmarImportacao() {
     setImportando(true)
+    const falhas: string[] = []
     try {
       const telefoneParaPaiId = new Map<string, string>()
       for (const [telefone, r] of responsaveisUnicos) {
@@ -281,34 +285,38 @@ export function ImportarPlanilha({ turmas, pais, alunos, onDone }: {
           telefoneParaPaiId.set(telefone, existente.id)
           continue
         }
-        const criado = await api.post<Pai>('/pais', {
-          nome: r.nome,
-          telefone,
-          tipo: r.tipo || undefined,
-          responsavelFinanceiro: (r.extras['Responsável financeiro'] || '').toLowerCase().startsWith('s'),
-          cpf: r.extras['CPF'] || undefined,
-          rg: r.extras['RG'] || undefined,
-          orgaoEmissorRg: r.extras['Órgão emissor do RG'] || undefined,
-          dataEmissaoRg: r.extras['Data de emissão do RG'] || undefined,
-          email: r.extras['E-mail'] || undefined,
-          certidaoNascimento: r.extras['Certidão de nascimento'] || undefined,
-          dataNascimento: r.extras['Data de nascimento do responsável'] || undefined,
-          naturalidade: r.extras['Naturalidade'] || undefined,
-          uf: r.extras['UF'] || undefined,
-          nacionalidade: r.extras['Nacionalidade'] || undefined,
-          profissao: r.extras['Profissão'] || undefined,
-          observacoes: r.extras['Observações'] || undefined,
-          endereco: {
-            logradouro: r.extras['Logradouro'] || '',
-            numero: r.extras['Número'] || '',
-            complemento: r.extras['Complemento'] || '',
-            bairro: r.extras['Bairro'] || '',
-            cidade: r.extras['Cidade'] || '',
-            estado: r.extras['UF'] || '',
-            cep: r.extras['CEP'] || '',
-          },
-        })
-        telefoneParaPaiId.set(telefone, criado.id)
+        try {
+          const criado = await api.post<Pai>('/pais', {
+            nome: r.nome,
+            telefone,
+            tipo: r.tipo || undefined,
+            responsavelFinanceiro: (r.extras['Responsável financeiro'] || '').toLowerCase().startsWith('s'),
+            cpf: r.extras['CPF'] || undefined,
+            rg: r.extras['RG'] || undefined,
+            orgaoEmissorRg: r.extras['Órgão emissor do RG'] || undefined,
+            dataEmissaoRg: r.extras['Data de emissão do RG'] || undefined,
+            email: r.extras['E-mail'] || undefined,
+            certidaoNascimento: r.extras['Certidão de nascimento'] || undefined,
+            dataNascimento: r.extras['Data de nascimento do responsável'] || undefined,
+            naturalidade: r.extras['Naturalidade'] || undefined,
+            uf: r.extras['UF'] || undefined,
+            nacionalidade: r.extras['Nacionalidade'] || undefined,
+            profissao: r.extras['Profissão'] || undefined,
+            observacoes: r.extras['Observações'] || undefined,
+            endereco: {
+              logradouro: r.extras['Logradouro'] || '',
+              numero: r.extras['Número'] || '',
+              complemento: r.extras['Complemento'] || '',
+              bairro: r.extras['Bairro'] || '',
+              cidade: r.extras['Cidade'] || '',
+              estado: r.extras['UF'] || '',
+              cep: r.extras['CEP'] || '',
+            },
+          })
+          telefoneParaPaiId.set(telefone, criado.id)
+        } catch (err) {
+          falhas.push(`Responsável ${r.nome} (${telefone}): ${(err as Error).message}`)
+        }
       }
 
       let criados = 0
@@ -319,24 +327,30 @@ export function ImportarPlanilha({ turmas, pais, alunos, onDone }: {
           { numero: e['Telefone do aluno 1'] || '', etiqueta: e['Etiqueta do telefone 1'] || '' },
           { numero: e['Telefone do aluno 2'] || '', etiqueta: e['Etiqueta do telefone 2'] || '' },
         ].filter((t) => t.numero || t.etiqueta)
-        await api.post('/alunos', {
-          nome: alunoNome, turmaId, iniciais, periodo, responsavelIds,
-          ra: e['RA'] || undefined,
-          numeroMatricula: e['Matrícula'] || undefined,
-          cpf: e['CPF do aluno'] || undefined,
-          rg: e['RG do aluno'] || undefined,
-          dataNascimento: e['Data de nascimento do aluno'] || undefined,
-          sexo: (e['Sexo do aluno']?.toUpperCase().startsWith('M') ? 'M' : e['Sexo do aluno']?.toUpperCase().startsWith('F') ? 'F' : e['Sexo do aluno'] ? 'outro' : undefined),
-          escolasAnteriores: e['Escolas anteriores'] || undefined,
-          inicioNaEscola: e['Início na escola'] || undefined,
-          irmaosNaEscola: e['Irmãos na escola'] ? Number(e['Irmãos na escola']) : undefined,
-          telefones: telefonesAluno,
-        })
-        criados++
+        try {
+          await api.post('/alunos', {
+            nome: alunoNome, turmaId, iniciais, periodo, responsavelIds,
+            ra: e['RA'] || undefined,
+            numeroMatricula: e['Matrícula'] || undefined,
+            cpf: e['CPF do aluno'] || undefined,
+            rg: e['RG do aluno'] || undefined,
+            dataNascimento: e['Data de nascimento do aluno'] || undefined,
+            sexo: (e['Sexo do aluno']?.toUpperCase().startsWith('M') ? 'M' : e['Sexo do aluno']?.toUpperCase().startsWith('F') ? 'F' : e['Sexo do aluno'] ? 'outro' : undefined),
+            escolasAnteriores: e['Escolas anteriores'] || undefined,
+            inicioNaEscola: e['Início na escola'] || undefined,
+            irmaosNaEscola: e['Irmãos na escola'] ? Number(e['Irmãos na escola']) : undefined,
+            telefones: telefonesAluno,
+          })
+          criados++
+        } catch (err) {
+          falhas.push(`Aluno ${alunoNome}: ${(err as Error).message}`)
+        }
       }
 
       const puladosTexto = alunosJaExistentes.length ? ` ${alunosJaExistentes.length} já existiam e foram ignorados.` : ''
-      setResultado(`${criados} aluno(s) e ${telefoneParaPaiId.size} responsável(is) processados.${puladosTexto}`)
+      const falhasTexto = falhas.length ? ` ${falhas.length} falharam (veja abaixo) — as outras linhas foram importadas normalmente.` : ''
+      setResultado(`${criados} aluno(s) e ${telefoneParaPaiId.size} responsável(is) processados.${puladosTexto}${falhasTexto}`)
+      setFalhasImportacao(falhas)
       setAlunosProcessados(null)
       onDone()
     } finally {
@@ -411,6 +425,13 @@ export function ImportarPlanilha({ turmas, pais, alunos, onDone }: {
         )}
 
         {resultado && <p className="text-[12.5px] font-semibold text-green-dark">{resultado}</p>}
+
+        {!!falhasImportacao.length && (
+          <div className="rounded-lg bg-red-light p-2.5">
+            <p className="text-[11.5px] font-bold text-red">{falhasImportacao.length} não foram importados:</p>
+            {falhasImportacao.map((f, i) => <p key={i} className="text-[11px] text-red">{f}</p>)}
+          </div>
+        )}
 
         <p className="mt-1 text-[10.5px] text-faint">
           Aluno com mesmo nome + turma de um já cadastrado não é duplicado — a importação avisa e ignora essa
