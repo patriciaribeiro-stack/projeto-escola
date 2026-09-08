@@ -145,6 +145,7 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
   const [anexo, setAnexo] = useState<{ nome: string; tipo: string; dataUrl: string } | null>(null)
   const [erroAnexo, setErroAnexo] = useState('')
   const [erro, setErro] = useState('')
+  const [processandoAnexo, setProcessandoAnexo] = useState(false)
   const [aceitaEntregaPdf, setAceitaEntregaPdf] = useState(true)
   const [ok, setOk] = useState(false)
   const [publicando, setPublicando] = useState(false)
@@ -158,12 +159,15 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
       setErroAnexo('Arquivo muito grande — o limite do protótipo é 8MB.')
       return
     }
+    setProcessandoAnexo(true)
     try {
       const dataUrl = await lerArquivoComoDataUrl(file)
       const tipo = dataUrl.slice(5, dataUrl.indexOf(';')) || file.type
       setAnexo({ nome: file.name, tipo, dataUrl })
     } catch {
       setErroAnexo(`Não consegui abrir "${file.name}" — tente outro arquivo ou formato.`)
+    } finally {
+      setProcessandoAnexo(false)
     }
   }
 
@@ -235,9 +239,9 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
             </button>
           </div>
         ) : (
-          <label className={`${inputCls} flex cursor-pointer items-center justify-center text-muted`}>
-            Escolher arquivo (PDF, foto, doc — até 8MB)
-            <input autoComplete="off" type="file" className="hidden" onChange={selecionarArquivo} />
+          <label className={`${inputCls} flex cursor-pointer items-center justify-center text-muted ${processandoAnexo ? 'opacity-50' : ''}`}>
+            {processandoAnexo ? 'Processando...' : 'Escolher arquivo (PDF, foto, doc — até 8MB)'}
+            <input autoComplete="off" type="file" className="hidden" onChange={selecionarArquivo} disabled={processandoAnexo} />
           </label>
         )}
         {erroAnexo && <p className="mt-1 text-[11.5px] font-semibold text-red">{erroAnexo}</p>}
@@ -263,30 +267,36 @@ export function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: s
   const [erro, setErro] = useState('')
   const [ok, setOk] = useState(false)
   const [publicando, setPublicando] = useState(false)
+  const [processando, setProcessando] = useState(false)
 
   async function selecionar(e: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     e.target.value = ''
     if (!files.length) return
     setErro('')
-    const espacoRestante = MAX_FOTOS_POR_LOTE - fotos.length
-    if (files.length > espacoRestante) {
-      setErro(`Você pode publicar no máximo ${MAX_FOTOS_POR_LOTE} fotos por vez.`)
-    }
-    const lidas: Anexo[] = []
-    for (const file of files.slice(0, espacoRestante)) {
-      if (file.size > MAX_MB_POR_FOTO * 1024 * 1024) {
-        setErro(`"${file.name}" é maior que ${MAX_MB_POR_FOTO}MB e foi ignorada.`)
-        continue
+    setProcessando(true)
+    try {
+      const espacoRestante = MAX_FOTOS_POR_LOTE - fotos.length
+      if (files.length > espacoRestante) {
+        setErro(`Você pode publicar no máximo ${MAX_FOTOS_POR_LOTE} fotos por vez.`)
       }
-      try {
-        const dataUrl = await lerArquivoComoDataUrl(file)
-        lidas.push({ nome: file.name, tipo: dataUrl.slice(5, dataUrl.indexOf(';')) || file.type, dataUrl })
-      } catch {
-        setErro(`Não consegui abrir "${file.name}" — tente outra foto ou formato (ex: exportar como JPEG).`)
+      const lidas: Anexo[] = []
+      for (const file of files.slice(0, espacoRestante)) {
+        if (file.size > MAX_MB_POR_FOTO * 1024 * 1024) {
+          setErro(`"${file.name}" é maior que ${MAX_MB_POR_FOTO}MB e foi ignorada.`)
+          continue
+        }
+        try {
+          const dataUrl = await lerArquivoComoDataUrl(file)
+          lidas.push({ nome: file.name, tipo: dataUrl.slice(5, dataUrl.indexOf(';')) || file.type, dataUrl })
+        } catch {
+          setErro(`Não consegui abrir "${file.name}" — tente outra foto ou formato (ex: exportar como JPEG).`)
+        }
       }
+      setFotos((prev) => [...prev, ...lidas])
+    } finally {
+      setProcessando(false)
     }
-    setFotos((prev) => [...prev, ...lidas])
   }
 
   function remover(idx: number) {
@@ -318,8 +328,8 @@ export function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: s
   return (
     <div className="flex flex-col gap-3">
       <Field label={`Fotos da turma (até ${MAX_FOTOS_POR_LOTE} — publicar substitui sua publicação de fotos anterior)`}>
-        <label className={`flex cursor-pointer items-center justify-center rounded-xl border border-line bg-paper-raised px-3.5 py-3 text-center text-[13.5px] text-muted ${fotos.length >= MAX_FOTOS_POR_LOTE ? 'opacity-50' : ''}`}>
-          Escolher fotos
+        <label className={`flex cursor-pointer items-center justify-center rounded-xl border border-line bg-paper-raised px-3.5 py-3 text-center text-[13.5px] text-muted ${fotos.length >= MAX_FOTOS_POR_LOTE || processando ? 'opacity-50' : ''}`}>
+          {processando ? 'Processando foto(s)...' : 'Escolher fotos'}
           <input
             autoComplete="off"
             type="file"
@@ -327,7 +337,7 @@ export function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: s
             multiple
             className="hidden"
             onChange={selecionar}
-            disabled={fotos.length >= MAX_FOTOS_POR_LOTE}
+            disabled={fotos.length >= MAX_FOTOS_POR_LOTE || processando}
           />
         </label>
         {erro && <p className="mt-1 text-[11.5px] font-semibold text-red">{erro}</p>}

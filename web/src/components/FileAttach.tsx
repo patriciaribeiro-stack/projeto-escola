@@ -21,6 +21,7 @@ export function FileAttach({
   maxSizeMB?: number
 }) {
   const [erro, setErro] = useState('')
+  const [processando, setProcessando] = useState(false)
 
   async function selecionar(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -31,12 +32,15 @@ export function FileAttach({
       setErro(`Arquivo muito grande — o limite do protótipo é ${maxSizeMB}MB.`)
       return
     }
+    setProcessando(true)
     try {
       const dataUrl = await lerArquivoComoDataUrl(file)
       const tipo = dataUrl.slice(5, dataUrl.indexOf(';')) || file.type
       onChange({ nome: file.name, tipo, dataUrl })
     } catch {
       setErro(`Não consegui abrir "${file.name}" — tente outro arquivo ou formato (ex: exportar a foto como JPEG).`)
+    } finally {
+      setProcessando(false)
     }
   }
 
@@ -63,9 +67,9 @@ export function FileAttach({
 
   return (
     <div>
-      <label className={`${inputCls} flex cursor-pointer items-center justify-center text-center text-muted`}>
-        {label}
-        <input autoComplete="off" type="file" accept={accept} className="hidden" onChange={selecionar} />
+      <label className={`${inputCls} flex cursor-pointer items-center justify-center text-center text-muted ${processando ? 'opacity-50' : ''}`}>
+        {processando ? 'Processando...' : label}
+        <input autoComplete="off" type="file" accept={accept} className="hidden" onChange={selecionar} disabled={processando} />
       </label>
       {erro && <p className="mt-1 text-[11.5px] font-semibold text-red">{erro}</p>}
     </div>
