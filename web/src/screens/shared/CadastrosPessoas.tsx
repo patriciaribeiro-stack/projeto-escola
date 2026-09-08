@@ -26,26 +26,8 @@ const SEGMENTO_LABEL: Record<Segmento, string> = {
 const ehFundamental = (t: Turma) => t.segmento === 'fundamental_1' || t.segmento === 'fundamental_2'
 
 type Vinculo = { turmaId: string; materiaId: string }
-type CredencialPai = { paiId: string; nome: string; telefone: string; texto: string; rotulo: string; tipo?: string }
 type CredencialProfessor = { nome: string; telefone: string; texto: string; rotulo: string }
 export type BlocoEtiqueta = { titulo: string; linhas: { label: string; valor: string }[] }
-
-function agruparCredenciaisPorAluno(fila: CredencialPai[], pais?: Pai[] | null, alunos?: Aluno[] | null): BlocoEtiqueta[] {
-  const porAluno = new Map<string, CredencialPai[]>()
-  for (const cred of fila) {
-    const pai = pais?.find((p) => p.id === cred.paiId)
-    const alunoIds = pai?.alunoIds.length ? pai.alunoIds : ['__sem_aluno__']
-    for (const alunoId of alunoIds) {
-      const lista = porAluno.get(alunoId) ?? []
-      lista.push(cred)
-      porAluno.set(alunoId, lista)
-    }
-  }
-  return Array.from(porAluno.entries()).map(([alunoId, credenciais]) => ({
-    titulo: alunoId === '__sem_aluno__' ? 'Sem aluno vinculado ainda' : (alunos?.find((a) => a.id === alunoId)?.nome ?? '...'),
-    linhas: credenciais.map((c) => ({ label: c.tipo || 'Responsável', valor: `${c.nome} · Tel ${c.telefone} · ${c.rotulo}: ${c.texto}` })),
-  }))
-}
 
 function toggleTurmaHandler(
   turma: Turma,
@@ -403,15 +385,14 @@ export function gerarSenhaAleatoria() {
 
 export function CadastrosPessoas() {
   const [sub, setSub] = useState<Sub>('alunos')
-  // Ficam aqui (e não dentro de cada aba) pra não zerar quando a secretaria troca de aba
-  // no meio do cadastro (ex: cria os responsáveis, vai em Alunos vincular, volta pra imprimir).
-  const [filaImpressaoPais, setFilaImpressaoPais] = useState<CredencialPai[]>([])
+  // Fica aqui (e não dentro da aba) pra não zerar quando a secretaria troca de aba
+  // no meio do cadastro dos professores (ex: cria, vai em Alunos vincular, volta pra imprimir).
   const [filaImpressaoProfessores, setFilaImpressaoProfessores] = useState<CredencialProfessor[]>([])
   return (
     <div className="flex flex-col gap-4">
       <TabGroup tabs={CADASTROS_PESSOAS_TABS} value={sub} onChange={setSub} />
       {sub === 'alunos' && <AlunosCadastro />}
-      {sub === 'pais' && <PaisCadastro filaImpressao={filaImpressaoPais} setFilaImpressao={setFilaImpressaoPais} />}
+      {sub === 'pais' && <PaisCadastro />}
       {sub === 'professores' && <ProfessoresCadastro filaImpressao={filaImpressaoProfessores} setFilaImpressao={setFilaImpressaoProfessores} />}
     </div>
   )
@@ -1093,10 +1074,7 @@ function DadosFichaPreview({ pai }: { pai: Pai }) {
   )
 }
 
-function PaisCadastro({ filaImpressao, setFilaImpressao }: {
-  filaImpressao: CredencialPai[]
-  setFilaImpressao: Dispatch<SetStateAction<CredencialPai[]>>
-}) {
+function PaisCadastro() {
   const { data: pais, reload } = usePolling<Pai[]>(async () => api.get('/pais'), 15000, [])
   const { data: alunos } = usePolling<Aluno[]>(async () => api.get('/alunos'), 15000, [])
   const { data: turmas } = usePolling<Turma[]>(async () => api.get('/turmas'), 60000, [])
@@ -1106,7 +1084,6 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
   const [responsavelFinanceiro, setResponsavelFinanceiro] = useState(false)
   const [ficha, setFicha] = useState<DadosFicha>(fichaVazia())
   const [salvando, setSalvando] = useState(false)
-  const [ultimoCodigo, setUltimoCodigo] = useState<{ nome: string; codigo: string } | null>(null)
   const [mostrarForm, setMostrarForm] = useState(false)
   const [editandoPaiId, setEditandoPaiId] = useState<string | null>(null)
   const [verDadosId, setVerDadosId] = useState<string | null>(null)
@@ -1116,36 +1093,11 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
   const [filtroFinanceiro, setFiltroFinanceiro] = useState<'' | 'sim' | 'nao'>('')
   const [filtroFicha, setFiltroFicha] = useState<'' | 'completa' | 'pendente'>('')
   const [filtroAlunoId, setFiltroAlunoId] = useState('')
-  const [selecionadosParaImprimir, setSelecionadosParaImprimir] = useState<string[]>([])
 
   const responsavelPorNomes = (paiId: string) => alunos?.filter((a) => pais?.find((p) => p.id === paiId)?.alunoIds.includes(a.id)).map((a) => a.nome).join(', ') || '—'
 
   const familiaDoAluno = filtroAlunoId ? (pais ?? []).filter((p) => p.alunoIds.includes(filtroAlunoId)) : []
   const nomeAlunoFiltro = alunos?.find((a) => a.id === filtroAlunoId)?.nome ?? ''
-
-  function alternarSelecao(paiId: string) {
-    setSelecionadosParaImprimir((prev) => (prev.includes(paiId) ? prev.filter((id) => id !== paiId) : [...prev, paiId]))
-  }
-
-  async function imprimirResponsavel(p: Pai) {
-    if (!p.consentimentoEm && p.codigoAcesso) {
-      setFilaImpressao((prev) => [...prev, { paiId: p.id, nome: p.nome, telefone: p.telefone, texto: p.codigoAcesso ?? '', rotulo: 'Código de acesso', tipo: p.tipo }])
-      return
-    }
-    if (!confirm(`${p.nome} já ativou o acesso. Isso vai gerar uma senha nova, substituindo a atual. Continuar?`)) return
-    const novaSenha = gerarSenhaAleatoria()
-    await api.patch(`/pais/${p.id}`, { novaSenha })
-    setFilaImpressao((prev) => [...prev, { paiId: p.id, nome: p.nome, telefone: p.telefone, texto: novaSenha, rotulo: 'Senha', tipo: p.tipo }])
-  }
-
-  async function imprimirSelecionados() {
-    for (const paiId of selecionadosParaImprimir) {
-      const p = familiaDoAluno.find((x) => x.id === paiId)
-      if (p) await imprimirResponsavel(p)
-    }
-    setSelecionadosParaImprimir([])
-  }
-
   const paisFiltrados = (pais ?? []).filter((p) => {
     if (buscaPai) {
       const q = buscaPai.toLowerCase()
@@ -1186,9 +1138,7 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
       if (editandoPaiId) {
         await api.patch(`/pais/${editandoPaiId}`, campos)
       } else {
-        const criado = await api.post<Pai>('/pais', campos)
-        setUltimoCodigo({ nome: criado.nome, codigo: criado.codigoAcesso ?? '' })
-        setFilaImpressao((prev) => [...prev, { paiId: criado.id, nome: criado.nome, telefone: criado.telefone, texto: criado.codigoAcesso ?? '', rotulo: 'Código de acesso', tipo: criado.tipo }])
+        await api.post<Pai>('/pais', campos)
       }
       limparFormulario()
       setMostrarForm(false)
@@ -1196,22 +1146,6 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
     } finally {
       setSalvando(false)
     }
-  }
-
-  async function gerarNovoCodigo(p: Pai) {
-    const atualizado = await api.patch<Pai>(`/pais/${p.id}`, { gerarNovoCodigo: true })
-    setUltimoCodigo({ nome: p.nome, codigo: atualizado.codigoAcesso ?? '' })
-    setFilaImpressao((prev) => [...prev, { paiId: p.id, nome: p.nome, telefone: p.telefone, texto: atualizado.codigoAcesso ?? '', rotulo: 'Código de acesso', tipo: p.tipo }])
-    reload()
-  }
-
-  async function redefinirSenha(p: Pai) {
-    const novaSenha = prompt('Digite a nova senha (mínimo 6 caracteres):')
-    if (!novaSenha) return
-    if (novaSenha.length < 6) return alert('A senha precisa ter pelo menos 6 caracteres.')
-    await api.patch(`/pais/${p.id}`, { novaSenha })
-    setFilaImpressao((prev) => [...prev, { paiId: p.id, nome: p.nome, telefone: p.telefone, texto: novaSenha, rotulo: 'Senha', tipo: p.tipo }])
-    alert('Senha redefinida. Informe a nova senha à família.')
   }
 
   async function excluir(id: string) {
@@ -1231,7 +1165,7 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
         <select
           className={`${inputCls} mt-2.5`}
           value={filtroAlunoId}
-          onChange={(e) => { setFiltroAlunoId(e.target.value); setSelecionadosParaImprimir([]) }}
+          onChange={(e) => setFiltroAlunoId(e.target.value)}
         >
           <option value="">Selecione um aluno</option>
           {alunos?.map((a) => <option key={a.id} value={a.id}>{a.nome}</option>)}
@@ -1239,14 +1173,7 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
 
         {!!filtroAlunoId && (
           <div className="mt-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[12.5px] font-bold">Família de {nomeAlunoFiltro}</span>
-              {!!selecionadosParaImprimir.length && (
-                <button onClick={imprimirSelecionados} className="text-[11.5px] font-bold text-blue">
-                  Imprimir selecionados ({selecionadosParaImprimir.length})
-                </button>
-              )}
-            </div>
+            <span className="text-[12.5px] font-bold">Família de {nomeAlunoFiltro}</span>
             {!familiaDoAluno.length && <p className="mt-2 text-[12.5px] text-faint">Nenhum responsável vinculado a esse aluno ainda.</p>}
             {!!familiaDoAluno.length && (
               <div className="mt-2 flex gap-3">
@@ -1277,21 +1204,13 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
             <div className="mt-2 flex flex-col gap-2">
               {familiaDoAluno.map((p) => (
                 <div key={p.id} className="flex items-center justify-between rounded-lg bg-paper-sunken px-3 py-2.5">
-                  <label className="flex items-center gap-2.5">
-                    <input
-                      type="checkbox"
-                      checked={selecionadosParaImprimir.includes(p.id)}
-                      onChange={() => alternarSelecao(p.id)}
-                    />
-                    <span>
-                      <span className="text-[12.5px] font-bold">{p.nome}</span>
-                      <span className="ml-1.5 text-[11px] text-muted">{p.tipo || 'Responsável'}</span>
-                    </span>
-                  </label>
+                  <span>
+                    <span className="text-[12.5px] font-bold">{p.nome}</span>
+                    <span className="ml-1.5 text-[11px] text-muted">{p.tipo || 'Responsável'}</span>
+                  </span>
                   <div className="flex items-center gap-2">
                     {p.fichaAtualizadaEm ? <Pill tone="green">Ficha completa</Pill> : <Pill tone="amber">Aguardando família</Pill>}
                     {p.consentimentoEm ? <Pill tone="green">Ativado</Pill> : <Pill tone="amber">Ainda não entrou no app</Pill>}
-                    <button onClick={() => imprimirResponsavel(p)} className="text-[11.5px] font-bold text-blue">Credencial</button>
                   </div>
                 </div>
               ))}
@@ -1345,24 +1264,6 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
       </Card>
       )}
 
-      {ultimoCodigo && (
-        <Card className="border-blue bg-blue-light">
-          <p className="text-[13px] font-bold text-blue">Código de matrícula de {ultimoCodigo.nome}</p>
-          <p className="mt-1 text-[22px] font-bold tracking-wider text-blue">{ultimoCodigo.codigo}</p>
-          <p className="mt-1 text-[11.5px] text-blue">Informe esse código e o telefone cadastrado à família — é assim que ela ativa o próprio acesso.</p>
-        </Card>
-      )}
-
-      {!!filaImpressao.length && (
-        <Card className="flex items-center justify-between">
-          <span className="text-[12.5px] font-semibold">{filaImpressao.length} credencial(is) pronta(s) pra imprimir</span>
-          <div className="flex gap-3">
-            <button onClick={() => imprimirEtiquetas('Credenciais — Famílias', agruparCredenciaisPorAluno(filaImpressao, pais, alunos))} className="text-[11.5px] font-bold text-blue">Imprimir etiquetas ({filaImpressao.length})</button>
-            <button onClick={() => setFilaImpressao([])} className="text-[11.5px] font-bold text-muted">Limpar fila</button>
-          </div>
-        </Card>
-      )}
-
       <Card>
         <SectionLabel>Filtrar responsáveis</SectionLabel>
         <div className="mt-2.5 flex flex-col gap-2.5">
@@ -1408,10 +1309,6 @@ function PaisCadastro({ filaImpressao, setFilaImpressao }: {
                   {verDadosId === p.id ? 'Ocultar dados preenchidos' : 'Ver dados preenchidos'}
                 </button>
                 <button onClick={() => abrirEdicao(p)} className="text-[11.5px] font-bold text-blue">Editar</button>
-                {!p.consentimentoEm && (
-                  <button onClick={() => gerarNovoCodigo(p)} className="text-[11.5px] font-bold text-blue">Gerar novo código</button>
-                )}
-                <button onClick={() => redefinirSenha(p)} className="text-[11.5px] font-bold text-blue">Redefinir senha</button>
                 <button onClick={() => excluir(p.id)} className="text-[11.5px] font-bold text-red">Excluir</button>
               </div>
               {verDadosId === p.id && <DadosFichaPreview pai={p} />}
