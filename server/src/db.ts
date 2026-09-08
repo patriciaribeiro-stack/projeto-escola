@@ -1,11 +1,17 @@
 import { Low } from 'lowdb'
 import { JSONFile } from 'lowdb/node'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { DbSchema } from './types.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const file = path.join(__dirname, '..', 'data', 'db.json')
+// Em produção (Render), DATA_DIR aponta pro disco persistente anexado ao
+// serviço — sem isso, os dados não sobrevivem a um redeploy ou reinício.
+// Em dev local, sem essa variável, continua salvando dentro do projeto.
+const dataDir = process.env.DATA_DIR ?? path.join(__dirname, '..', 'data')
+fs.mkdirSync(dataDir, { recursive: true })
+const file = path.join(dataDir, 'db.json')
 
 const defaultData: DbSchema = {
   configuracao: { dataCorteDia: 31, dataCorteMes: 3 },

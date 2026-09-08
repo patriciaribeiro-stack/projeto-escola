@@ -2,6 +2,13 @@ services:
   - type: web
     name: projeto-escola
     runtime: node
-    plan: free
+    plan: starter
     buildCommand: cd web && npm install && npm run build && cd ../server && npm install && npm run bootstrap
     startCommand: cd server && npm start
+    disk:
+      name: dados
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /var/data
