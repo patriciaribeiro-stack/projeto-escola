@@ -11,6 +11,7 @@ import { FormConteudoDia } from './FormConteudoDia'
 import { FormAtividadeAvaliativa } from './AtividadesAvaliativas'
 import { Field, Sucesso, inputCls } from './formHelpers'
 import { TOM_CLASSES, TOM_CYCLE } from '../../components/TabGroup'
+import { lerArquivoComoDataUrl } from '../../lerImagem'
 
 type Forma = 'licao' | 'foto' | 'relatorio' | 'conteudo' | 'aviso' | 'rotina' | 'ocorrencia' | 'avaliativa' | null
 
@@ -157,13 +158,13 @@ function FormLicao({ turmaId, autor, materias, onDone }: { turmaId: string; auto
       setErroAnexo('Arquivo muito grande — o limite do protótipo é 8MB.')
       return
     }
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-    setAnexo({ nome: file.name, tipo: file.type, dataUrl })
+    try {
+      const dataUrl = await lerArquivoComoDataUrl(file)
+      const tipo = dataUrl.slice(5, dataUrl.indexOf(';')) || file.type
+      setAnexo({ nome: file.name, tipo, dataUrl })
+    } catch {
+      setErroAnexo(`Não consegui abrir "${file.name}" — tente outro arquivo ou formato.`)
+    }
   }
 
   async function publicar() {
@@ -278,13 +279,12 @@ export function FormFoto({ turmaId, autor, onDone }: { turmaId: string; autor: s
         setErro(`"${file.name}" é maior que ${MAX_MB_POR_FOTO}MB e foi ignorada.`)
         continue
       }
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result as string)
-        reader.onerror = reject
-        reader.readAsDataURL(file)
-      })
-      lidas.push({ nome: file.name, tipo: file.type, dataUrl })
+      try {
+        const dataUrl = await lerArquivoComoDataUrl(file)
+        lidas.push({ nome: file.name, tipo: dataUrl.slice(5, dataUrl.indexOf(';')) || file.type, dataUrl })
+      } catch {
+        setErro(`Não consegui abrir "${file.name}" — tente outra foto ou formato (ex: exportar como JPEG).`)
+      }
     }
     setFotos((prev) => [...prev, ...lidas])
   }

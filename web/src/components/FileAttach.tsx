@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent } from 'react'
+import { lerArquivoComoDataUrl } from '../lerImagem'
 
 export interface Anexo {
   nome: string
@@ -30,13 +31,13 @@ export function FileAttach({
       setErro(`Arquivo muito grande — o limite do protótipo é ${maxSizeMB}MB.`)
       return
     }
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-    onChange({ nome: file.name, tipo: file.type, dataUrl })
+    try {
+      const dataUrl = await lerArquivoComoDataUrl(file)
+      const tipo = dataUrl.slice(5, dataUrl.indexOf(';')) || file.type
+      onChange({ nome: file.name, tipo, dataUrl })
+    } catch {
+      setErro(`Não consegui abrir "${file.name}" — tente outro arquivo ou formato (ex: exportar a foto como JPEG).`)
+    }
   }
 
   const inputCls = 'rounded-xl border border-line bg-paper-raised px-3.5 py-3 text-[13.5px] outline-none focus:border-blue'
